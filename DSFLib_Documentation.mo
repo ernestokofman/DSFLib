@@ -1,5 +1,6 @@
 package DSFLib
   package Circuits
+  "Library of electrical circuit components"
     package Units "Electrical variables"
       type Voltage = Real(unit = "V");
       type Current = Real(unit = "A");
@@ -13,7 +14,7 @@ package DSFLib
         DSFLib.Circuits.Units.Voltage v "Potential at the pin";
         flow DSFLib.Circuits.Units.Current i "Current flowing into the pin";
         annotation(Documentation(info="<html>
-      <p>Pin is the basic electric connector. It includes the voltage which consists between the pin and the ground node. The ground node is the node of (any) ground device. Furthermore, the pin includes the current, which is considered to be <strong>positive</strong> if it is flowing at the pin <strong>into the device</strong>.</p>
+      <p>Pin is the basic electric connector. It includes the voltage between the pin and the ground node. The ground node is the node of (any) ground device. Furthermore, the pin includes the current, which is considered to be <strong>positive</strong> if it is flowing at the pin <strong>into the device</strong>.</p>
       </html>"), Icon(graphics = {Rectangle(fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}})}));
       end Pin;
 
@@ -34,7 +35,7 @@ package DSFLib
       </html>")); 
       end OnePort;
        annotation (Documentation(info="<html>
-    <p>This package contains connectors and interfaces (partial model) for analog electrical components. The partial models contain typical combinations of pins, and internal variables which are often used. Furthermore, the thermal heat port is in this package which can be included by inheritance.</p>
+    <p>This package contains connectors and interfaces (partial model) for analog electrical components. </p>
     </html>"));
     end Interfaces;
 
@@ -319,97 +320,145 @@ package DSFLib
   end Circuits;
 
   package Mechanical
+  "Library of 1-dim. and 2-dim. mechanical components (rotational, translational and planar)"
     package Translational
+    "Library to model 1-dimensional, translational mechanical systems"
       package Units
+      "Mechanical Translational (1-dim.) variables"
         type Position = Real(unit = "m");
         type Force = Real(unit = "N");
+        annotation(Documentation(info="<html>
+      <p>This package provides predefined types for mechanical translational 1-dim. variables based on the international standard on units. </p>
+      </html>"));
       end Units;
 
       package Interfaces
         import DSFLib.Mechanical.Translational.Units.*;
 
         connector Flange
-          Position s;
-          flow Force f;
-          annotation(
+        "One-dimensional translational flange"
+          Position s "Absolute position";
+          flow Force f "Force";
+          annotation(Documentation(info="<html>
+        <p>
+        This is a connector for 1D translational mechanical systems.
+        It includes the absolute position of the flange in [m] respect to the fixed point. A positive translation means that the flange is translated along the flange axis. Furthermore, the flange includes the force in direction of the flange axis in [N].
+        </p>
+        </html>"),
             Icon(graphics = {Rectangle(fillColor = {0, 118, 0}, fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}})}, coordinateSystem(initialScale = 0.1)));
         end Flange;
 
         partial model Compliant
+        "Compliant connection of two translational 1D flanges"
           DSFLib.Mechanical.Translational.Interfaces.Flange flange_b annotation(
             Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -4.44089e-16}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
           DSFLib.Mechanical.Translational.Interfaces.Flange flange_a annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, 1.55431e-15}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-          Position s_rel;
-          Force f;
+          Position s_rel "Relative position (= flange_b.s - flange_a.s)";
+          Force f "Force between flanges (positive in direction of flange b)";
         equation
           s_rel = flange_b.s - flange_a.s;
           flange_b.f = f;
           flange_a.f = -f;
+          annotation (Documentation(info="<html>
+        <p>
+        This is a 1D translational component with a <em>compliant</em> connection of two
+        translational 1D flanges where inertial effects between the two
+        flanges are not included. This allows to model deformable objects such as springs, dampers etc. The absolute value of the force at the left and the right
+        flange is the same.
+        </p>
+        
+        </html>"));
         end Compliant;
+        annotation (Documentation(info="<html>
+      <p>This package contains connectors and partial models for 1-dim.
+      translational mechanical components.</p>
+      </html>"));
       end Interfaces;
 
       package Components
+       "Components for 1D translational mechanical systems"
         import DSFLib.Mechanical.Translational.Units.*;
         import DSFLib.Mechanical.Translational.Interfaces.*;
 
         model Fixed
+          "Fixed"
           DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {2, 48}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {1.55431e-15, -1.55431e-15}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-          parameter Position s_0 = 0;
+          parameter Position s_0 = 0 "Fixed position";
         equation
           flange.s = s_0;
           annotation(
-            Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(points = {{40, -40}, {0, -80}}, color = {0, 127, 0}), Line(points = {{-40, -40}, {-80, -80}}, color = {0, 127, 0}), Line(points = {{-80, -40}, {80, -40}}, color = {0, 127, 0}), Line(points = {{0, -40}, {0, -10}}, color = {0, 127, 0}), Line(points = {{80, -40}, {40, -80}}, color = {0, 127, 0}), Line(points = {{0, -40}, {-40, -80}}, color = {0, 127, 0}), Text(textColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name")}));
+            Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(points = {{40, -40}, {0, -80}}, color = {0, 127, 0}), Line(points = {{-40, -40}, {-80, -80}}, color = {0, 127, 0}), Line(points = {{-80, -40}, {80, -40}}, color = {0, 127, 0}), Line(points = {{0, -40}, {0, -10}}, color = {0, 127, 0}), Line(points = {{80, -40}, {40, -80}}, color = {0, 127, 0}), Line(points = {{0, -40}, {-40, -80}}, color = {0, 127, 0}), Text(textColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name")}), Documentation(info="<html>
+        <p>
+        The <em>fixed</em> component of a 1D translational mechanical system is used to establish the housing position at s0. Every mechanical systems must have at least one fixed. It allows the connection of a compliant element, such as a spring or a damper, between a sliding mass and the housing.
+        </html>"));
         end Fixed;
 
         model Mass
+          "Point Mass"
           DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -4.44089e-16}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-          parameter Real m(unit = "Kg") = 1;
-          Position s;
-          Real v(unit = "m/s");
-          Force f;
+          parameter Real m(unit = "Kg") = 1 "Mass parameter";
+          Position s "Absolute position";
+          Real v(unit = "m/s") "Absolute velocity";
+          Force f "Net force";
         equation
           s = flange.s;
           f = flange.f;
           m*der(v) - f = 0;
           der(s) - v = 0;
           annotation(
-            Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 85}, {150, 45}}, textString = "%name"), Text(extent = {{-150, -45}, {150, -75}}, textString = "m=%m"), Rectangle(origin = {-2, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Sphere, extent = {{-73, -36}, {74, 36}})}));
+            Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 85}, {150, 45}}, textString = "%name"), Text(extent = {{-150, -45}, {150, -75}}, textString = "m=%m"), Rectangle(origin = {-2, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Sphere, extent = {{-73, -36}, {74, 36}})}), Documentation(info="<html>
+        <p>
+        Point mass with <em>inertia</em> and one translational flange. Sign convention: A positive force at the flange moves the mass in the positive direction, a negative force at the flange moves the mass to the negative direction.</p>
+        </html>"));
         end Mass;
 
         model Spring
+          "Linear Spring"
           extends Compliant;
-          parameter Real k(unit = "N/m") = 1;
-          parameter Position s_rel0 = 0;
+          parameter Real k(unit = "N/m") = 1 "Spring constant";
+          parameter Position s_rel0 = 0 "Unstretched spring length";
         equation
           f = k*(s_rel - s_rel0);
           annotation(
-            Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(origin = {0, -8}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Text(extent = {{-150, -45}, {150, -75}}, textString = "k=%k"), Line(points = {{-98, 0}, {-60, 0}, {-44, -30}, {-16, 30}, {14, -30}, {44, 30}, {60, 0}, {100, 0}}, color = {0, 127, 0})}));
+            Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(origin = {0, -8}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Text(extent = {{-150, -45}, {150, -75}}, textString = "k=%k"), Line(points = {{-98, 0}, {-60, 0}, {-44, -30}, {-16, 30}, {14, -30}, {44, 30}, {60, 0}, {100, 0}}, color = {0, 127, 0})}), Documentation(info="<html>
+        <p>
+        A <em>linear 1D translational spring</em> satisfies a linear relation between the force and the deformation.
+        </p>
+        </html>"));
         end Spring;
 
         model Damper
+         "Linear damper"
           extends Compliant;
-          parameter Real b(unit = "N.s/m") = 1;
+          parameter Real b(unit = "N.s/m") = 1 "Damping constant";
         equation
           f = b*der(s_rel);
           annotation(
-            Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(points = {{-90, 0}, {100, 0}}, color = {0, 127, 0}), Line(visible = false, points = {{-100, -100}, {-100, -20}, {-14, -20}}, color = {191, 0, 0}, pattern = LinePattern.Dot), Text(origin = {0, -8}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Line(points = {{-60, -30}, {-60, 30}}), Line(points = {{60, -30}, {-60, -30}, {-60, 30}, {60, 30}}, color = {0, 127, 0}), Rectangle(lineColor = {0, 127, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-60, 30}, {30, -30}}), Text(extent = {{-150, -45}, {150, -75}}, textString = "b=%b")}));
+            Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(points = {{-90, 0}, {100, 0}}, color = {0, 127, 0}), Line(visible = false, points = {{-100, -100}, {-100, -20}, {-14, -20}}, color = {191, 0, 0}, pattern = LinePattern.Dot), Text(origin = {0, -8}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Line(points = {{-60, -30}, {-60, 30}}), Line(points = {{60, -30}, {-60, -30}, {-60, 30}, {60, 30}}, color = {0, 127, 0}), Rectangle(lineColor = {0, 127, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-60, 30}, {30, -30}}), Text(extent = {{-150, -45}, {150, -75}}, textString = "b=%b")}),Documentation(info="<html>
+        <p>
+        A <em>linear 1D translational damper</em> satisfies a linear relation between the force and the relative velocity.
+        </p>
+        </html>"));
         end Damper;
 
         model ConstForce
+          "Constant force"
           DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {-98, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -1.55431e-15}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-          parameter Force F = 1;
+          parameter Force F = 1 "Force value";
         equation
           flange.f = -F;
           annotation(
             Diagram,
-            Icon(graphics = {Text(origin = {4, -58}, extent = {{-98, 16}, {98, -16}}, textString = "F=%F"), Text(origin = {-2, -6}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Polygon(origin = {40, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-100, 10}, {14, 10}, {14, 27}, {60, 0}, {14, -27}, {14, -10}, {-100, -10}, {-100, 10}}), Line(origin = {-77, 0}, points = {{17, 0}, {-17, 0}, {-17, 0}})}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
+            Icon(graphics = {Text(origin = {4, -58}, extent = {{-98, 16}, {98, -16}}, textString = "F=%F"), Text(origin = {-2, -6}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Polygon(origin = {40, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-100, 10}, {14, 10}, {14, 27}, {60, 0}, {14, -27}, {14, -10}, {-100, -10}, {-100, 10}}), Line(origin = {-77, 0}, points = {{17, 0}, {-17, 0}, {-17, 0}})}, coordinateSystem(extent = {{-100, -100}, {100, 100}})), Documentation(info="<html>
+        <p>Model of constant force, not dependent on velocity of flange. Positive force accelerates in positive direction of movement, but brakes in reverse direction of movement. </p> </html>"));
         end ConstForce;
 
         model ModulatedForce
+          "Modulated Force"
           DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {-98, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -1.55431e-15}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
           DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
@@ -417,14 +466,24 @@ package DSFLib
         equation
           flange.f = -u;
           annotation(
-            Icon(graphics = {Polygon(origin = {40, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-100, 10}, {14, 10}, {14, 27}, {60, 0}, {14, -27}, {14, -10}, {-100, -10}, {-100, 10}}), Line(origin = {-77, 0}, points = {{17, 0}, {-17, 0}, {-17, 0}}), Text(origin = {-2, -126}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}));
+            Icon(graphics = {Polygon(origin = {40, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-100, 10}, {14, 10}, {14, 27}, {60, 0}, {14, -27}, {14, -10}, {-100, -10}, {-100, 10}}), Line(origin = {-77, 0}, points = {{17, 0}, {-17, 0}, {-17, 0}}), Text(origin = {-2, -126}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}),     Documentation(info="<html>
+        <p>Model of a modulated force. The input signal in characterizes an external
+        force which acts (with positive sign) at a flange. Positive force values accelerates in positive direction of movement, but brakes in reverse direction of movement.</p>
+        </html>"));
         end ModulatedForce;
+          annotation (Documentation(info="<html>
+      <p>
+      This package contains basic components for 1D mechanical translational systems.
+      </p>
+      </html>"));
       end Components;
 
       package Examples
+        "Examples that demonstrate the usage of the mechanical translational components"
         import DSFLib.Mechanical.Translational.Components.*;
 
         model SpringMass
+         "Sprin mass system"
           DSFLib.Mechanical.Translational.Components.Fixed fixed annotation(
             Placement(visible = true, transformation(origin = {-22, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
           DSFLib.Mechanical.Translational.Components.Mass mass(s(start = 1)) annotation(
@@ -438,10 +497,15 @@ package DSFLib
             Line(points = {{-22, 0}, {-10, 0}}));
           annotation(
             Diagram(coordinateSystem(extent = {{-100, -100}, {100, 100}})),
-            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04));
+            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04), Documentation(info="<html>
+        <p>
+        This example models a simple spring-mass system, which is a classic mechanical oscillator. The system consists of a single mass connected to a fixed point through an ideal linear spring. The mass starts from an initial displacement and oscillates around the equilibrium position with a natural frequency given by sqrt(k/m).
+        </p>
+        </html>"));
         end SpringMass;
 
         model SpringMassForce
+          "Forced spring mass system"
           DSFLib.Mechanical.Translational.Components.Fixed fixed annotation(
             Placement(visible = true, transformation(origin = {-22, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
           DSFLib.Mechanical.Translational.Components.Mass mass(s(start = 0)) annotation(
@@ -459,10 +523,15 @@ package DSFLib
             Line(points = {{48, 0}, {20, 0}}));
           annotation(
             Diagram(coordinateSystem(extent = {{-100, -100}, {100, 100}})),
-            experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02));
+            experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02), Documentation(info="<html>
+        <p>
+        This example extends the basic spring-mass system by applying a constant external force to the mass. The system consists of a mass connected to a fixed point through an ideal linear spring, while a constant force acts on the mass. The external force shifts the system’s equilibrium position, and the mass oscillates around this new offset. The natural frequency remains sqrt(k/m).
+        </p>
+        </html>"));
         end SpringMassForce;
 
         model SpringDamperMass
+         "Damped spring mass"
           DSFLib.Mechanical.Translational.Components.Fixed fixed annotation(
             Placement(visible = true, transformation(origin = {-34, 0}, extent = {{-10, 10}, {10, -10}}, rotation = 90)));
           DSFLib.Mechanical.Translational.Components.Mass mass(m = 10, s(start = 1)) annotation(
@@ -482,102 +551,167 @@ package DSFLib
             Line(points = {{36, 0}, {18, 0}, {18, 10}, {10, 10}}));
           annotation(
             Diagram,
-            experiment(StartTime = 0, StopTime = 60, Tolerance = 1e-06, Interval = 0.12));
+            experiment(StartTime = 0, StopTime = 60, Tolerance = 1e-06, Interval = 0.12), Documentation(info="<html>
+        <p>
+        This example models a damped spring-mass system, where a mass is connected to a fixed point through a linear spring and a linear damper. The damper introduces energy dissipation, which causes the oscillations to decay over time. Depending on the damping coefficient and the spring-mass ratio, the system can exhibit underdamped, critically damped, or overdamped behavior. 
+        </p>
+        </html>"));
         end SpringDamperMass;
       end Examples;
+      annotation(Documentation(info="<html>
+    <p>
+    This package contains components to model <em>1-dimensional translational
+    mechanical</em> systems.
+    </p>
+    <p>
+    The green squares at the left and
+    right side of a component represent <em>mechanical flanges</em>.
+    Connecting two or more flanges implies that they are <em>rigidly attached</em> to each other, meaning their positions are identical and the sum of forces acting on the flange is zero. The components of this library can be usually connected together in an arbitrary way. E.g. it is
+    possible to connect two springs or two sliding masses with inertia directly
+    together.
+    </p>
+    
+    </html>"));
     end Translational;
 
     package Rotational
+    "Library to model 1-dimensional, rotational mechanical systems"
       package Units
+      "Mechanical Rotational (1-dim.) variables"
         type Angle = Real(unit = "rad");
         type Torque = Real(unit = "N.m");
       end Units;
 
       package Interfaces
         connector Flange
-          DSFLib.Mechanical.Rotational.Units.Angle phi;
-          flow DSFLib.Mechanical.Rotational.Units.Torque tau;
-          annotation(
-            Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(fillColor = {193, 193, 193}, fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}})}));
+          "One-dimensional rotational flange"
+          DSFLib.Mechanical.Rotational.Units.Angle phi "Absolute rotation angle";
+          flow DSFLib.Mechanical.Rotational.Units.Torque tau "Torque";
+          annotation(Documentation(info="<html>
+        <p>
+        This is a connector for 1D rotational mechanical systems.
+        It includes the absolute angle of the flange in [rad] respect to the fixed point. A positive rotation means that the flange is rotated along the flange axis. Furthermore, the flange includes the torque in direction of the flange axis in [Nm].
+        </p>
+        </html>"), Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(fillColor = {193, 193, 193}, fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}})}));
         end Flange;
 
         partial model Compliant
+        "Compliant connection of two rotational 1D flanges"
           DSFLib.Mechanical.Rotational.Interfaces.Flange flange_b annotation(
             Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {99, -1}, extent = {{-15, -15}, {15, 15}}, rotation = 0)));
           DSFLib.Mechanical.Rotational.Interfaces.Flange flange_a annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-101, -1}, extent = {{-15, -15}, {15, 15}}, rotation = 0)));
-          DSFLib.Mechanical.Rotational.Units.Angle phi_rel;
-          DSFLib.Mechanical.Rotational.Units.Torque tau;
+          DSFLib.Mechanical.Rotational.Units.Angle phi_rel "Relative rotation angle (= flange_b.phi - flange_a.phi)";
+          DSFLib.Mechanical.Rotational.Units.Torque tau "Torque between flanges (positive in direction of flange b)";
         equation
           phi_rel = flange_b.phi - flange_a.phi;
           flange_b.tau = tau;
           flange_a.tau = -tau;
+          annotation (Documentation(info="<html>
+        <p>
+        This is a 1-dim. rotational component with a compliant connection of two
+        rotational 1-dim. flanges where inertial effects between the two
+        flanges are neglected. This allows to model deformable objects such as springs, dampers etc. The absolute value of the torque at two flanges is the same.
+        </p>
+        </html>"));
         end Compliant;
+        annotation (Documentation(info="<html>
+      <p>This package contains connectors and partial models for 1-dim.
+      rotational mechanical components.</p>
+      </html>"));
       end Interfaces;
 
       package Components
+      "Components for 1D rotational mechanical systems"
         import DSFLib.Mechanical.Rotational.Units.*;
         import DSFLib.Mechanical.Rotational.Interfaces.*;
 
         model Fixed
-          parameter Angle phi_0 = 0;
+          "Fixed"
+          parameter Angle phi_0 = 0 "Fixed angle";
           DSFLib.Mechanical.Rotational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {0, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {2.22045e-16, 8.88178e-16}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
         equation
           flange.phi = phi_0;
           annotation(
-            Icon(graphics = {Line(points = {{-80, -40}, {80, -40}}), Text(textColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{80, -40}, {40, -80}}), Line(points = {{-40, -40}, {-80, -80}}), Line(points = {{40, -40}, {0, -80}}), Line(points = {{0, -40}, {0, -10}}), Line(points = {{0, -40}, {-40, -80}})}));
+            Icon(graphics = {Line(points = {{-80, -40}, {80, -40}}), Text(textColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{80, -40}, {40, -80}}), Line(points = {{-40, -40}, {-80, -80}}), Line(points = {{40, -40}, {0, -80}}), Line(points = {{0, -40}, {0, -10}}), Line(points = {{0, -40}, {-40, -80}})}),Documentation(info="<html>
+        <p>
+        The <em>fixed</em> component of a 1D rotational mechanical system is used to establish the housing rotation angle at phi_0. Every rotational mechanical systems must have at least one fixed. It allows the connection of a compliant element, such as a spring or a damper, between a inertia and the housing.
+        </html>"));
         end Fixed;
 
         model Inertia
+         "Rotational inertia"
           DSFLib.Mechanical.Rotational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-98, -8.88178e-16}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
-          parameter Real J(unit = "Kg.m2") = 1;
-          Angle phi;
-          Real w(unit = "rad/s");
-          Torque tau;
+          parameter Real J(unit = "Kg.m2") = 1 "Inertia parameter";
+          Angle phi "Absolute rotation angle";
+          Real w(unit = "rad/s") "Absolute rotation velocity";
+          Torque tau "Net torque";
         equation
           phi = flange.phi;
           tau = flange.tau;
           J*der(w) - tau = 0;
           der(phi) - w = 0;
           annotation(
-            Icon(graphics = {Text(origin = {5, 118}, extent = {{-105, 18}, {105, -18}}, textString = "J=%J"), Rectangle(origin = {17, -4}, fillColor = {238, 238, 238}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-57, 104}, {43, -96}}, radius = 20), Rectangle(origin = {-17, 63}, fillColor = {238, 238, 238}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-83, -49}, {-23, -77}}), Text(origin = {6, -184}, textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
+            Icon(graphics = {Text(origin = {5, 118}, extent = {{-105, 18}, {105, -18}}, textString = "J=%J"), Rectangle(origin = {17, -4}, fillColor = {238, 238, 238}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-57, 104}, {43, -96}}, radius = 20), Rectangle(origin = {-17, 63}, fillColor = {238, 238, 238}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-83, -49}, {-23, -77}}), Text(origin = {6, -184}, textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})),Documentation(info="<html>
+        <p>
+        Rotational <em>inertia</em> and one rotational flange. Sign convention: A positive torque at the flange rotates the inertia in the positive direction, a negative torque at the flange moves the inertia to the negative direction.</p>
+        </html>"));
         end Inertia;
 
         model Spring
+          "Linear rotational spring"
           extends Compliant;
-          parameter Real k(unit = "N.m/rad") = 1;
-          parameter Angle phi_rel0 = 0;
+          parameter Real k(unit = "N.m/rad") = 1 "Spring constant";
+          parameter Angle phi_rel0 = 0 "Unstretched spring rotation angle";
         equation
           tau = k*(phi_rel - phi_rel0);
           annotation(
-            Icon(graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name"), Line(points = {{-100, 0}, {-58, 0}, {-43, -30}, {-13, 30}, {17, -30}, {47, 30}, {62, 0}, {100, 0}}), Text(origin = {9, -12}, extent = {{-141, -34}, {141, -68}}, textString = "k=%k")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
+            Icon(graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name"), Line(points = {{-100, 0}, {-58, 0}, {-43, -30}, {-13, 30}, {17, -30}, {47, 30}, {62, 0}, {100, 0}}), Text(origin = {9, -12}, extent = {{-141, -34}, {141, -68}}, textString = "k=%k")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})), Documentation(info="<html>
+        <p>
+        A <em>linear rotational spring</em> satisfies a linear relation between the torque and the angular deformation.
+        </p>
+        </html>"));
         end Spring;
 
         model Damper
+         "Linear rotational damper"
           extends Compliant;
-          parameter Real b(unit = "N.m.s/rad") = 1;
+          parameter Real b(unit = "N.m.s/rad") = 1 "Damping constant";
         equation
           tau = b*der(phi_rel);
           annotation(
-            Icon(graphics = {Line(visible = false, points = {{-100, -100}, {-100, -40}, {-20, -40}, {-20, 0}}, color = {191, 0, 0}, pattern = LinePattern.Dot), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-60, 30}, {30, -30}}), Line(points = {{-60, 30}, {60, 30}}), Line(points = {{-90, 0}, {-60, 0}}), Line(points = {{-60, -30}, {-60, 30}}), Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name"), Line(points = {{-60, -30}, {60, -30}}), Text(extent = {{-150, -50}, {150, -90}}, textString = "b=%b"), Line(points = {{30, 0}, {90, 0}})}));
+            Icon(graphics = {Line(visible = false, points = {{-100, -100}, {-100, -40}, {-20, -40}, {-20, 0}}, color = {191, 0, 0}, pattern = LinePattern.Dot), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-60, 30}, {30, -30}}), Line(points = {{-60, 30}, {60, 30}}), Line(points = {{-90, 0}, {-60, 0}}), Line(points = {{-60, -30}, {-60, 30}}), Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name"), Line(points = {{-60, -30}, {60, -30}}), Text(extent = {{-150, -50}, {150, -90}}, textString = "b=%b"), Line(points = {{30, 0}, {90, 0}})}),Documentation(info="<html>
+        <p>
+        A <em>linear rotational damper</em> satisfies a linear relation between the torque and the relative angular velocity.
+        </p>
+        </html>"));
         end Damper;
 
         model ConstTorque
+          "Constant torque"
           extends DSFLib.Mechanical.Rotational.Interfaces.Compliant;
-          parameter Real Tau(unit = "N.m") = 1;
+          parameter Real Tau(unit = "N.m") = 1 "Torque value";
         equation
           tau = -Tau;
           annotation(
-            Icon(graphics = {Text(origin = {-4, 80}, extent = {{-96, 16}, {96, -16}}, textString = "Tau=%Tau"), Line(origin = {74.38, -0.191319}, points = {{-14, 0}, {14, 0}}, thickness = 0.5), Line(origin = {-74.6161, -0.292183}, points = {{-14, 0}, {14, 0}}, thickness = 0.5), Line(origin = {-38.81, -0.53}, points = {{-18.6464, 41}, {21.3536, 1}, {-20.6464, -41}}, thickness = 0.5, arrow = {Arrow.None, Arrow.Filled}, arrowSize = 10, smooth = Smooth.Bezier), Line(origin = {39.2395, 0.441271}, rotation = 180, points = {{-18.6464, 41}, {21.3536, 1}, {-20.6464, -41}}, thickness = 0.5, arrow = {Arrow.None, Arrow.Filled}, arrowSize = 10, smooth = Smooth.Bezier), Text(origin = {-4, -154}, textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)));
+            Icon(graphics = {Text(origin = {-4, 80}, extent = {{-96, 16}, {96, -16}}, textString = "Tau=%Tau"), Line(origin = {74.38, -0.191319}, points = {{-14, 0}, {14, 0}}, thickness = 0.5), Line(origin = {-74.6161, -0.292183}, points = {{-14, 0}, {14, 0}}, thickness = 0.5), Line(origin = {-38.81, -0.53}, points = {{-18.6464, 41}, {21.3536, 1}, {-20.6464, -41}}, thickness = 0.5, arrow = {Arrow.None, Arrow.Filled}, arrowSize = 10, smooth = Smooth.Bezier), Line(origin = {39.2395, 0.441271}, rotation = 180, points = {{-18.6464, 41}, {21.3536, 1}, {-20.6464, -41}}, thickness = 0.5, arrow = {Arrow.None, Arrow.Filled}, arrowSize = 10, smooth = Smooth.Bezier), Text(origin = {-4, -154}, textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 40}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)),Documentation(info="<html>
+        <p>Model of constant torque, not dependent on angular velocity of flange. Positive torque accelerates in positive direction of movement, but brakes in reverse direction of movement. </p> </html>"));
         end ConstTorque;
+        annotation (Documentation(info="<html>
+      <p>
+      This package contains basic components for 1D mechanical rotational systems.
+      </p>
+      </html>"));
       end Components;
 
       package Examples
+      "Examples that demonstrate the usage of the mechanical rotational components"
         import DSFLib.Mechanical.Rotational.Components.*;
 
         model SpringDamperInertia
+          "Damped spring inertia"
           DSFLib.Mechanical.Rotational.Components.Fixed fixed annotation(
             Placement(visible = true, transformation(origin = {-24, 0}, extent = {{-10, 10}, {10, -10}}, rotation = 90)));
           DSFLib.Mechanical.Rotational.Components.Inertia inertia(J = 0.009, phi(start = 1), w(start = 0.2)) annotation(
@@ -596,14 +730,35 @@ package DSFLib
           connect(fixed.flange, spring.flange_a) annotation(
             Line(points = {{-24, 2.22045e-17}, {-16, 2.22045e-17}, {-16, 12}, {-10, 12}}));
           annotation(
-            experiment(StartTime = 0, StopTime = 5, Tolerance = 1e-06, Interval = 0.01));
+            experiment(StartTime = 0, StopTime = 5, Tolerance = 1e-06, Interval = 0.01), Documentation(info="<html>
+        <p>
+        This example models a damped spring-inertia (rotational) system, where an inertia is connected to a fixed point through a linear rotational spring and a linear rotational damper. The damper introduces energy dissipation, which causes the oscillations to decay over time. Depending on the damping coefficient and the spring-mass ratio, the system can exhibit underdamped, critically damped, or overdamped behavior. 
+        </p>
+        </html>"));
         end SpringDamperInertia;
       end Examples;
+      annotation(Documentation(info="<html>
+    <p>
+    This package contains components to model <em>1-dimensional rotational
+    mechanical</em> systems.
+    </p>
+    <p>
+    The grey squares at the left and
+    right side of a component represent <em>mechanical flanges</em>.
+    Connecting two or more flanges implies that they are <em>rigidly attached</em> to each other, meaning their angles are identical and the sum of torques acting on the flange is zero. The components of this library can be usually connected together in an arbitrary way. E.g. it is
+    possible to connect two springs or two inertias directly
+    together.
+    </p>
+    
+    </html>"));
     end Rotational;
 
     package RotoTranslational
+    "Library to model roto-translational mechanical systems"
       package Components
+      "Components for roto-translational mechanical systems"
         model RackPinion
+          "Rack-Pinion"
           DSFLib.Mechanical.Translational.Interfaces.Flange flangeT annotation(
             Placement(visible = true, transformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -70}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
           DSFLib.Mechanical.Rotational.Interfaces.Flange flangeR annotation(
@@ -614,12 +769,26 @@ package DSFLib
           flangeT.s - s_0 = r*flangeR.phi;
           r*flangeT.f = -flangeR.tau;
           annotation(
-            Icon(graphics = {Line(origin = {-79.4754, -70.0239}, points = {{6, 0}, {-6, 0}, {6, 0}}), Text(origin = {48, -8}, extent = {{-150, 50}, {150, 80}}, textString = "r=%r"), Rectangle(fillColor = {72, 143, 0}, fillPattern = FillPattern.Solid, extent = {{-74.41, -80}, {106.59, -60}}), Polygon(origin = {-20, 0}, rotation = 10, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-5.3473, 43.0304}, {-10, 10}, {-45, 5}, {-45, -5}, {-10, -10}, {-5, -45}, {5, -45}, {10, -10}, {41.0608, -4.30541}, {41.0608, 5.69459}, {10, 10}, {4.6527, 43.0304}, {-5.3473, 43.0304}}), Polygon(origin = {-20, 0}, rotation = 55, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-5, 45}, {-10, 10}, {-45, 5}, {-45, -5}, {-10, -10}, {-5, -45}, {5, -45}, {10, -10}, {43.3617, -6.14715}, {43.3617, 3.85285}, {10, 10}, {5, 45}, {-5, 45}}), Polygon(origin = {16.88, -50}, fillColor = {66, 132, 0}, fillPattern = FillPattern.Solid, points = {{-84.375, -10}, {-79.375, 10}, {-69.375, 10}, {-64.375, -10}, {-54.375, -10}, {-49.375, 10}, {-39.375, 10}, {-34.375, -10}, {-24.375, -10}, {-19.375, 10}, {-9.375, 10}, {-4.375, -10}, {5.625, -10}, {10.625, 10}, {20.625, 10}, {25.625, -10}, {35.625, -10}, {40.625, 10}, {50.625, 10}, {55.625, -10}, {65.625, -10}, {70.625, 10}, {78.125, 10}, {78.125, -10}, {-84.375, -10}}), Ellipse(origin = {-21, -1}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-29, -29}, {29, 29}}), Text(origin = {0, -222}, textColor = {0, 0, 255}, extent = {{-150, 85}, {150, 125}}, textString = "%name")}));
+            Icon(graphics = {Line(origin = {-79.4754, -70.0239}, points = {{6, 0}, {-6, 0}, {6, 0}}), Text(origin = {48, -8}, extent = {{-150, 50}, {150, 80}}, textString = "r=%r"), Rectangle(fillColor = {72, 143, 0}, fillPattern = FillPattern.Solid, extent = {{-74.41, -80}, {106.59, -60}}), Polygon(origin = {-20, 0}, rotation = 10, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-5.3473, 43.0304}, {-10, 10}, {-45, 5}, {-45, -5}, {-10, -10}, {-5, -45}, {5, -45}, {10, -10}, {41.0608, -4.30541}, {41.0608, 5.69459}, {10, 10}, {4.6527, 43.0304}, {-5.3473, 43.0304}}), Polygon(origin = {-20, 0}, rotation = 55, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-5, 45}, {-10, 10}, {-45, 5}, {-45, -5}, {-10, -10}, {-5, -45}, {5, -45}, {10, -10}, {43.3617, -6.14715}, {43.3617, 3.85285}, {10, 10}, {5, 45}, {-5, 45}}), Polygon(origin = {16.88, -50}, fillColor = {66, 132, 0}, fillPattern = FillPattern.Solid, points = {{-84.375, -10}, {-79.375, 10}, {-69.375, 10}, {-64.375, -10}, {-54.375, -10}, {-49.375, 10}, {-39.375, 10}, {-34.375, -10}, {-24.375, -10}, {-19.375, 10}, {-9.375, 10}, {-4.375, -10}, {5.625, -10}, {10.625, 10}, {20.625, 10}, {25.625, -10}, {35.625, -10}, {40.625, 10}, {50.625, 10}, {55.625, -10}, {65.625, -10}, {70.625, 10}, {78.125, 10}, {78.125, -10}, {-84.375, -10}}), Ellipse(origin = {-21, -1}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-29, -29}, {29, 29}}), Text(origin = {0, -222}, textColor = {0, 0, 255}, extent = {{-150, 85}, {150, 125}}, textString = "%name")}),Documentation(info="<html>
+        <p>
+        This model represents a rack and pinion mechanism, which converts rotational motion into linear motion and vice versa. The main assumption is an ideal no-slip condition at the contact point. The mechanical interaction is defined by the gear radius, which determines the relationship between the angular velocity of the pinion and the linear velocity of the rack. The torque applied to the pinion generates a force on the rack, satisfying power conservation between the rotational and translational domains.
+        </p>
+        <p>
+        Note that it is possible to model the mass of the rack and the inertia of the pinion by adding a translational mass and a rotational inertia component, respectively.
+        </p>
+        </html>"));
         end RackPinion;
+        annotation (Documentation(info="<html>
+      <p>
+      This package contains basic components for roto-translational systems.
+      </p>
+      </html>"));
       end Components;
 
       package Examples
+      "Examples that demonstrate the usage of the roto-Translationaltional components"
         model RotTrans
+          "Roto-translational system example"
           DSFLib.Mechanical.Rotational.Components.Inertia inertia(J = 1, phi(start = 1)) annotation(
             Placement(visible = true, transformation(origin = {37, 11}, extent = {{-9, -9}, {9, 9}}, rotation = 0)));
           DSFLib.Mechanical.Rotational.Components.Fixed fixed1 annotation(
@@ -648,36 +817,53 @@ package DSFLib
           connect(rackPinion.flangeR, inertia.flange) annotation(
             Line(points = {{4, 12}, {20, 12}, {20, 11}, {28, 11}}));
           annotation(
-            experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-06, Interval = 0.04));
+            experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-06, Interval = 0.04), Documentation(info="<html>
+        <p>
+        This example connects a linear translational damper to a linear rotational spring system through a rack-pinion mechanism. The inertia of the pinion and the mass of the rack are modeled by adding a rotational inertia and a translational mass, respectively. The rotational inertia is initialized with an initial rotation angle. Note that it is not possible to also set an initial position for the mass, since the pinion and the rack are rigidly coupled.
+        </p>
+        </html>"));
         end RotTrans;
       end Examples;
+      annotation(Documentation(info="<html>
+    <p>
+    This package contains components for modeling roto-translational mechanical systems. The components include both translational and rotational flanges, allowing the interconnection of translational and rotational elements.
+    </p>
+    </html>"));
     end RotoTranslational;
 
     package Planar
+    "Library to model planar mechanical systems"
       package Units
+      "Mechanical planar (2-dim.) variables"
         type Position = DSFLib.Mechanical.Translational.Units.Position[2];
         type Force = DSFLib.Mechanical.Translational.Units.Force[2];
       end Units;
 
       package Interfaces
         connector Frame
-          DSFLib.Mechanical.Planar.Units.Position r;
-          flow DSFLib.Mechanical.Planar.Units.Force f;
-          DSFLib.Mechanical.Rotational.Units.Angle phi;
-          flow DSFLib.Mechanical.Rotational.Units.Torque tau;
-          annotation(
+          DSFLib.Mechanical.Planar.Units.Position r "Absolute position";
+          flow DSFLib.Mechanical.Planar.Units.Force f "Force";
+          DSFLib.Mechanical.Rotational.Units.Angle phi "Orientation angle (respect to horizontal direction)";
+          flow DSFLib.Mechanical.Rotational.Units.Torque tau "Torque";
+          annotation(Documentation(info="<html>
+        <p>
+        This is a connector for planar mechanical systems.
+        It includes the absolute position of the flange in [m] respect to the fixed point. Note that the position is a vector of two components in order to represent a position in the plane. Furthermore, the flange includes the force in [N] which is also a two components vector.
+        </p>
+        </html>"),
             Icon(graphics = {Rectangle(fillColor = {221, 221, 221}, fillPattern = FillPattern.Solid, extent = {{-22, 100}, {22, -100}})}));
         end Frame;
 
         partial model Compliant
+        "Compliant connection of two planar (2D) flanges"
           DSFLib.Mechanical.Planar.Interfaces.Frame frame_a annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-104, 2.55351e-15}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Interfaces.Frame frame_b annotation(
             Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {104, 1.11022e-15}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
-          Real l(unit = "m");
-          Real phi(unit = "rad");
-          Real w(unit = "rad/s");
-          DSFLib.Mechanical.Translational.Units.Force f;
+          Real l(unit = "m") "Length";
+          Real phi(unit = "rad") "Orientation angle (respect to horizontal direction)";
+          Real w(unit = "rad/s") "Angular velocity";
+          DSFLib.Mechanical.Translational.Units.Force f "Force transmitted";
         equation
           frame_b.r[1] - frame_a.r[1] = l*cos(phi);
           frame_b.r[2] - frame_a.r[2] = l*sin(phi);
@@ -687,33 +873,49 @@ package DSFLib
           phi = frame_b.phi;
           frame_a.tau + frame_b.tau + l*cos(phi)*frame_b.f[2] - l*sin(phi)*frame_b.f[1] = 0;
           frame_b.f[1]*cos(phi) + frame_b.f[2]*sin(phi) = f;
+           annotation (Documentation(info="<html>
+      <p>
+      This is a planar (2D) component with a <em>compliant</em> connection of two
+      planar frames. This component can be used to represent objects in which the frames are only allowed to move along the longitudinal direction. The forces acting on the frames are equal and opposite (by components), and the sum of torques is zero. 
+      </p>
+      
+      </html>"));
         end Compliant;
+        annotation (Documentation(info="<html>
+      <p>This package contains connectors and partial models for planar (2-dim.) mechanical components.</p>
+      </html>"));
       end Interfaces;
 
       package Components
+        "Components for planar mechanical systems"
         model Fixed
-          parameter DSFLib.Mechanical.Planar.Units.Position r = {0, 0};
-          parameter DSFLib.Mechanical.Rotational.Units.Angle phi = 0;
+          "Planar fixed"
+          parameter DSFLib.Mechanical.Planar.Units.Position r = {0, 0} "Fixed position";
+          parameter DSFLib.Mechanical.Rotational.Units.Angle phi = 0 "Fixed orientation angle";
           DSFLib.Mechanical.Planar.Interfaces.Frame frame annotation(
             Placement(visible = true, transformation(origin = {100, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {104, 6.66134e-16}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
         equation
           frame.r = r;
           frame.phi = phi;
           annotation(
-            Icon(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Text(textColor = {0, 0, 255}, extent = {{150, 145}, {-150, 105}}, textString = "%name"), Text(extent = {{-150, -105}, {150, -135}}, textString = "r=%r"), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{0, -40}, {-40, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{0, -40}, {0, 60}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{-40, -40}, {-80, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{-80, -40}, {80, -40}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{40, -40}, {0, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{80, -40}, {40, -80}})}),
-            Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}})));
+            Icon(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Text(textColor = {0, 0, 255}, extent = {{150, 145}, {-150, 105}}, textString = "%name"), Text(extent = {{-150, -105}, {150, -135}}, textString = "r=%r"), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{0, -40}, {-40, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{0, -40}, {0, 60}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{-40, -40}, {-80, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{-80, -40}, {80, -40}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{40, -40}, {0, -80}}), Line(origin = {40.231, -0.362069}, rotation = -90, points = {{80, -40}, {40, -80}})}), 
+            Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}})), Documentation(info="<html>
+        <p>
+        The <em>fixed</em> component of a planar mechanical system is used to establish the housing position r and the orientation angle phi. Every mechanical systems must have at least one fixed. It allows the connection of a compliant element, such as a spring or a damper, between a mass and the housing.
+        </html>"));
         end Fixed;
 
         model Body
+          "Rigid body"
           DSFLib.Mechanical.Planar.Interfaces.Frame frame annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-105, -1}, extent = {{-23, -23}, {23, 23}}, rotation = 0)));
           parameter Real m(unit = "Kg") = 1 "Mass of the body";
           parameter Real J(unit = "Kg.m2") = 0.1 "Inertia of the body";
           parameter Real[2] g(each unit = "m/s2") = {0, -9.81} "Gravity acceleration";
-          DSFLib.Mechanical.Planar.Units.Position r;
-          Real[2] v;
-          DSFLib.Mechanical.Rotational.Units.Angle phi;
-          Real w;
+          DSFLib.Mechanical.Planar.Units.Position r "Absolute position";
+          Real[2] v "Absolute velocity";
+          DSFLib.Mechanical.Rotational.Units.Angle phi "Orientation angle (respect to horizontal direction)";
+          Real w "Angular velocity";
         equation
           r = frame.r;
           phi = frame.phi;
@@ -722,35 +924,47 @@ package DSFLib
           m*der(v) = frame.f + m*g;
           J*der(w) = frame.tau;
           annotation(
-            Icon(graphics = {Rectangle(fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, 40}, {-20, -40}}), Ellipse(fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-60, 60}, {60, -60}}), Text(extent = {{150, -96}, {-150, -66}}, textString = "m=%m"), Text(extent = {{150, -130}, {-150, -100}}, textString = "J=%J"), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
+            Icon(graphics = {Rectangle(fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, 40}, {-20, -40}}), Ellipse(fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-60, 60}, {60, -60}}), Text(extent = {{150, -96}, {-150, -66}}, textString = "m=%m"), Text(extent = {{150, -130}, {-150, -100}}, textString = "J=%J"), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})),Documentation(info="<html>
+        <p>
+        Rigid body with a frame for connection. This model includes the effect of gravity. The movement is represented as the movement of a point mass in the center of mass and a rotational movement of an  inertia.
+        </html>"));
         end Body;
 
         model pointMass
+          "Planar point Mass"
           DSFLib.Mechanical.Planar.Interfaces.Frame frame annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {2.44249e-15, 2.44249e-15}, extent = {{-24, -24}, {24, 24}}, rotation = 0)));
           parameter Real m(unit = "Kg") = 1 "Mass of the body";
           parameter Real[2] g(each unit = "m/s2") = {0, -9.81} "Gravity acceleration";
-          DSFLib.Mechanical.Planar.Units.Position r;
-          Real[2] v;
+          DSFLib.Mechanical.Planar.Units.Position r "Absolute position";
+          Real[2] v "Absolute velocity";
         equation
           r = frame.r;
           v = der(r);
           m*der(v) = frame.f + m*g;
           frame.tau = 0;
           annotation(
-            Icon(graphics = {Ellipse(fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-60, 60}, {60, -60}}), Text(extent = {{150, -96}, {-150, -66}}, textString = "m=%m"), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
+            Icon(graphics = {Ellipse(fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-60, 60}, {60, -60}}), Text(extent = {{150, -96}, {-150, -66}}, textString = "m=%m"), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})),Documentation(info="<html>
+        <p>
+        Point mass with a frame for connection. This model includes the effect of gravity, and the net torque is zero since the object has no rotational inertia.</p>
+        </html>"));
         end pointMass;
 
         model RigidBar
+          "Rigid bar"
           extends DSFLib.Mechanical.Planar.Interfaces.Compliant;
           parameter Real L(unit = "m") = 1;
         equation
           l = L;
           annotation(
-            Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(origin = {0, -1}, fillColor = {179, 179, 179}, fillPattern = FillPattern.Solid, extent = {{-100, 7}, {100, -7}}), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name"), Text(extent = {{150, -96}, {-150, -66}}, textString = "L=%L")}));
+            Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(origin = {0, -1}, fillColor = {179, 179, 179}, fillPattern = FillPattern.Solid, extent = {{-100, 7}, {100, -7}}), Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name"), Text(extent = {{150, -96}, {-150, -66}}, textString = "L=%L")}), Documentation(info="<html>
+        <p>
+        This is an extension of the class <em>compliant</em> with a fixed length. This means the object has no mass and no inertia.</p>
+        </html>"));
         end RigidBar;
 
         model Revolute
+          "Revolute joint"
           DSFLib.Mechanical.Planar.Interfaces.Frame frame_a annotation(
             Placement(visible = true, transformation(origin = {-102, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-104, 3.9968e-15}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Interfaces.Frame frame_b annotation(
@@ -767,10 +981,25 @@ package DSFLib
           support.phi = 0;
           flange_a.phi = frame_b.phi - frame_a.phi;
           annotation(
-            Icon(graphics = {Rectangle(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{30, -60}, {100, 60}}, radius = 10), Rectangle(lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-30, 11}, {30, -10}}), Rectangle(lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-30, 11}, {30, -10}}), Text(textColor = {128, 128, 128}, extent = {{-90, 14}, {-54, -11}}, textString = "a"), Line(visible = false, points = {{-20, 70}, {-60, 70}, {-60, 60}}), Rectangle(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, -60}, {-30, 60}}, radius = 10), Polygon(visible = false, lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, points = {{-10, 30}, {10, 30}, {30, 50}, {-30, 50}, {-10, 30}}), Rectangle(lineColor = {64, 64, 64}, extent = {{-100, 60}, {-30, -60}}, radius = 10), Text(textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name")}));
+            Icon(graphics = {Rectangle(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{30, -60}, {100, 60}}, radius = 10), Rectangle(lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-30, 11}, {30, -10}}), Rectangle(lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, extent = {{-30, 11}, {30, -10}}), Text(textColor = {128, 128, 128}, extent = {{-90, 14}, {-54, -11}}, textString = "a"), Line(visible = false, points = {{-20, 70}, {-60, 70}, {-60, 60}}), Rectangle(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, -60}, {-30, 60}}, radius = 10), Polygon(visible = false, lineColor = {64, 64, 64}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid, points = {{-10, 30}, {10, 30}, {30, 50}, {-30, 50}, {-10, 30}}), Rectangle(lineColor = {64, 64, 64}, extent = {{-100, 60}, {-30, -60}}, radius = 10), Text(textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name")}),  Documentation(info="<html>
+        
+        <p>
+        Joint where frame_b rotates around axis which is fixed in frame_a.
+        The two frames coincide when the rotation angle phi = 0.
+        </p>
+        <p>
+        It includes two additional 1-dim. rotational flanges
+        (flange \"flange_a\" represents the driving flange and
+        flange \"support\" represents the bearing). The axis flange can be
+        driven with elements of rotational library. It is not allowed adding inertias because the support could be a non-inertial reference system.
+        </p>
+        
+        
+        </html>"));
         end Revolute;
 
         model Prismatic
+          "Prismatic joint"
           extends DSFLib.Mechanical.Planar.Interfaces.Compliant;
           DSFLib.Mechanical.Translational.Interfaces.Flange support annotation(
             Placement(visible = true, transformation(origin = {-80, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-64, -62}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
@@ -781,12 +1010,31 @@ package DSFLib
           support.s = 0;
           flange_a.s = l;
           annotation(
-            Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name"), Rectangle(lineColor = {0, 0, 255}, fillColor = {192, 192, 192}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-100, -50}, {-30, 41}}), Line(points = {{-30, -50}, {-30, 50}}), Text(textColor = {128, 128, 128}, extent = {{60, 12}, {96, -13}}, textString = "b"), Rectangle(lineColor = {0, 0, 255}, fillColor = {192, 192, 192}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, -30}, {100, 20}}), Rectangle(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, 20}, {100, 30}}), Rectangle(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-100, 40}, {-30, 50}})}));
+            Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Text(textColor = {0, 0, 255}, extent = {{-150, 100}, {150, 60}}, textString = "%name"), Rectangle(lineColor = {0, 0, 255}, fillColor = {192, 192, 192}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-100, -50}, {-30, 41}}), Line(points = {{-30, -50}, {-30, 50}}), Text(textColor = {128, 128, 128}, extent = {{60, 12}, {96, -13}}, textString = "b"), Rectangle(lineColor = {0, 0, 255}, fillColor = {192, 192, 192}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, -30}, {100, 20}}), Rectangle(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, 20}, {100, 30}}), Rectangle(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-100, 40}, {-30, 50}})}), Documentation(info="<html>
+        <p>
+        Joint where frame_b is translated along axis which is fixed in frame_a.
+        The two frames coincide when the relative distance \"s = 0\".
+        </p>
+        <p>
+        It includes two additional 1-dim. translational flanges
+        (flange \"flange_a\" represents the driving flange and
+        flange \"support\" represents the bearing). The axis flange can be
+        driven with elements of translational library. It is not allowed adding masses because the support could be a non-inertial reference system.
+        </p>
+        
+        
+        </html>"));
         end Prismatic;
+            annotation (Documentation(info="<html>
+      <p>
+      This package contains basic components for planar mechanical systems.
+      </p>
+      </html>"));
       end Components;
 
       package Examples
         model Pendulum
+          "Pendulum"
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
             Placement(visible = true, transformation(origin = {0, 18}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Components.RigidBar rigidBar(phi.start = -1) annotation(
@@ -804,10 +1052,16 @@ package DSFLib
             Line(points = {{-28, 27.6}, {-28, 18}, {-10, 18}}));
           annotation(
             Diagram,
-            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04));
+            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04), Documentation(info="<html>
+        
+        <p>
+        This model represents a simple pendulum, which consists of a point mass attached to the end of a rigid massless bar. The other end of the bar is connected to a fixed point through a revolute, allowing the mass to swing freely in a vertical plane under the influence of gravity. The model assumes no air resistance and no friction at the pivot.
+        </p>
+        </html>"));
         end Pendulum;
 
         model PhysicalPendulum
+          "Physical pendulum"
           DSFLib.Mechanical.Planar.Components.Body body(phi.start = -1) annotation(
             Placement(visible = true, transformation(origin = {18, -26}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
@@ -825,10 +1079,16 @@ package DSFLib
             Line(points = {{-26, 27.6}, {-26, 17.6}, {-10, 17.6}}));
           annotation(
             Diagram,
-            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04));
+            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04),Documentation(info="<html>
+        
+        <p>
+        This model represents a physical pendulum, which consists of a rigid body attached to the end of a rigid, massless rod. The other end of the bar is connected to a fixed point through a revolute, allowing the body to swing freely in a vertical plane under the influence of gravity. The model assumes no air resistance and no friction at the pivot. The main difference compared to a simple pendulum is that, in this model, the rigid body can rotate around its center of mass.
+        </p>
+        </html>"));
         end PhysicalPendulum;
 
-        model DoublePendulum
+        model DoublePendulum 
+          "Doble Péndulo"
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
             Placement(visible = true, transformation(origin = {0, 28}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Components.RigidBar rigidBar(phi.start = -1) annotation(
@@ -858,10 +1118,15 @@ package DSFLib
             Line(points = {{-10, 28}, {-24.4, 28}, {-24.4, 44}}));
           annotation(
             Diagram(coordinateSystem(extent = {{-100, -100}, {100, 100}})),
-            experiment(StartTime = 0, StopTime = 30, Tolerance = 1e-06, Interval = 0.006));
+            experiment(StartTime = 0, StopTime = 30, Tolerance = 1e-06, Interval = 0.006),Documentation(info="<html>
+        <p>
+        This model represents a double pendulum system, which consists of two point masses connected by rigid, massless rods. The first mass is attached to a fixed pivot through a rigid rod and a revolute joint, while the second mass is connected to the first one through another rigid rod and another revolute joint. Both masses swing freely in a vertical plane under the influence of gravity. The model assumes no air resistance and no friction at the pivot or at the joint between the two rods.
+        </p>
+        </html>"));
         end DoublePendulum;
 
         model BridgeCrane
+          "Bridge crane"
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
             Placement(visible = true, transformation(origin = {26, 12}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Components.RigidBar rigidBar(phi.start = -1) annotation(
@@ -893,10 +1158,16 @@ package DSFLib
             Line(points = {{-19.6, 5.8}, {-19.6, -0.2}, {-11.6, -0.2}, {-11.6, -12.2}, {-17.6, -12.2}}));
           annotation(
             Diagram,
-            experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02));
+            experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02), Documentation(info="<html>
+        <p>
+        This model represents a simplified overhead crane system. The setup consists of a point mass (representing the trolley) that moves horizontally along a guide, modeled using a prismatic joint. A damper is connected to represent friction or active damping between the trolley and the rail.
+        The trolley carries a load, modeled as a second point mass, which is attached via a rigid, massless bar to the trolley through a revolute joint, allowing it to swing freely like a pendulum under the effect of gravity.
+        </p>
+        </html>"));
         end BridgeCrane;
 
         model SpringPendulum
+          "Spring Pendulum"
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
             Placement(visible = true, transformation(origin = {-10, 16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Components.pointMass pointMass(r.start = {cos(-1), sin(-1)}) annotation(
@@ -920,10 +1191,15 @@ package DSFLib
             Line(points = {{-6, -28}, {-6, -34}, {6, -34}, {6, -24}, {12, -24}}));
           annotation(
             Diagram,
-            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.004));
+            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.004),Documentation(info="<html>
+        <p>
+        This model represents a realistic simple pendulum, which consists of a point mass attached to the end of a rod. The other end of rod is connected to a fixed point through a revolute, allowing the mass to swing freely in a vertical plane under the influence of gravity. The elasticity of the rod is represented by a spring in the prismatic joint. The model assumes no air resistance and no friction at the pivot.
+        </p>
+        </html>"));
         end SpringPendulum;
 
         model SliderCrank
+          "Slider crank"
           DSFLib.Mechanical.Planar.Components.Revolute revolute annotation(
             Placement(visible = true, transformation(origin = {-58, 18}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.Mechanical.Planar.Components.RigidBar rigidBar(L = 0.1) annotation(
@@ -976,36 +1252,66 @@ package DSFLib
           connect(revolute.flange_a, constTorque.flange_b) annotation(
             Line(points = {{-52, 10}, {-42, 10}, {-42, -10}, {-48, -10}}));
           annotation(
-            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.004));
+            experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.004),Documentation(info="<html>
+        
+        <p>
+        This example shows a classic slider-crank mechanism, commonly used to convert rotational motion into linear motion (and vice versa). The system consists of a crank, a connecting rod, and a slider. The crank is modeled using a revolute joint to allow rotational motion, a rigid body to represent its inertia, and a rigid bar. This subsystem is driven by a constant torque source, and its rotation is transmitted through the connecting rod to the slider, which moves along a straight path constrained by a prismatic joint. A damper is connected to the slider to model mechanical resistance or energy dissipation.
+        
+        </p>
+        </html>"));
         end SliderCrank;
       end Examples;
-      annotation();
+      annotation(Documentation(info="<html>
+    <p>
+    This package contains components to model planar (2-dim.)
+    mechanical</em> systems.
+    </p>
+    <p>
+    The grey recatangles represent <em>mechanical flanges</em>.
+    Connecting two or more flanges implies that they are <em>rigidly attached</em> to each other, meaning their positions and angles are identical and the sum of forces (in both directions) acting on the flange is zero. The components of this library can be usually connected together in an arbitrary way. E.g. it is
+    possible to connect two springs or two masses directly
+    together.
+    </p>
+    
+    </html>"));
     end Planar;
+    annotation(Documentation(info="<html>
+  <p>
+  This package contains components to model the movement
+  of 1-dim. rotational, 1-dim. translational, and
+  2-dim. <strong>mechanical systems</strong>.
+  </p>
+  </html>"));
   end Mechanical;
 
   package Hydraulics
-    package Units
+  "Library of hydraulic components"
+    package Units "Hydraulic variables"
       type Pressure = Real(unit = "Pa");
       type VolumeFlow = Real(unit = "m3/s");
+      annotation(Documentation(info="<html>
+    <p>This package provides predefined types for hydraulic variables based on the international standard on units. </p>
+    </html>"));
     end Units;
 
     package Interfaces
       import DSFLib.Hydraulics.Units.*;
 
-      connector FluidPort
-        Pressure p;
-        flow VolumeFlow q;
-        annotation(
-          Icon(graphics = {Ellipse(origin = {0, 1}, fillColor = {0, 170, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 99}, {100, -99}}, endAngle = 360)}));
+      connector FluidPort "Fluid port (hydraulic connector)"
+        Pressure p "Absolute pressure";
+        flow VolumeFlow q "Flow rate";
+        annotation(Documentation(info="<html>
+      <p>Fluid port is the basic hydraulic connector. It includes the difference of pressure between the Fluid Port and a Constant pressure. Furthermore, the Fluid Port includes the flow, which is considered to be <strong>positive</strong> if it is flowing at the pin <strong>into the device</strong>.</p>
+      </html>"),Icon(graphics = {Ellipse(origin = {0, 1}, fillColor = {0, 170, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 99}, {100, -99}}, endAngle = 360)}));
       end FluidPort;
 
-      partial model TwoPort
+      partial model TwoPort "Component with two fluid ports a and b and current i from a to b"
         DSFLib.Hydraulics.Interfaces.FluidPort fluidPort_b annotation(
           Placement(visible = true, transformation(origin = {-100, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, 0}, extent = {{-16, -16}, {16, 16}}, rotation = 0)));
         DSFLib.Hydraulics.Interfaces.FluidPort fluidPort_a annotation(
           Placement(visible = true, transformation(origin = {100, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-16, -16}, {16, 16}}, rotation = 0)));
-        Pressure p;
-        VolumeFlow q;
+        Pressure p "Pressure drop of the component";
+        VolumeFlow q "Flow rate flowing from fluid port a to b";
       equation
         p = fluidPort_b.p - fluidPort_a.p;
         q = fluidPort_b.q;
@@ -1013,24 +1319,28 @@ package DSFLib
         annotation(
           Icon);
       end TwoPort;
+      annotation (Documentation(info="<html>
+    <p>This package contains connectors and interfaces (partial model) for hydraulic components. </p>
+    </html>"));
     end Interfaces;
 
-    package Components
+    package Components "Hydraulic components"
       import DSFLib.Hydraulics.Interfaces.*;
       import DSFLib.Hydraulics.Units.*;
 
-      model Valve
+      model Valve "Linear valve"
         extends TwoPort;
         parameter Real RH(unit = "Pa.s/m3") = 1000 "Hydraulic Resistance";
       equation
         p - RH*q = 0;
-        annotation(
-          Icon(graphics = {Polygon(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-100, 50}, {100, -50}, {100, 50}, {0, 0}, {-100, -50}, {-100, 50}}), Text(origin = {0, 14}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Text(origin = {2, -18}, extent = {{-144, -34}, {144, -68}}, textString = "RH=%RH")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
+        annotation(Documentation(info="<html>
+      <p>The linear valve connects the pressure drop <em>p</em> with the flow rate <em>q</em> by <em>q*RH = p</em>. The hydraulic resistance <em>RH</em> is allowed to be positive, zero, or negative.</p>
+      </html>"), Icon(graphics = {Polygon(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, points = {{-100, 50}, {100, -50}, {100, 50}, {0, 0}, {-100, -50}, {-100, 50}}), Text(origin = {0, 14}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Text(origin = {2, -18}, extent = {{-144, -34}, {144, -68}}, textString = "RH=%RH")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end Valve;
 
-      model Tank
+      model Tank "Tank"
         parameter Real A(unit = "m2") = 1 "Tank area";
-        parameter Real g(unit = "m/s2") = 9.8;
+        parameter Real g(unit = "m/s2") = 9.8 "Gravity";
         parameter Real rho(unit = "Kg/m3") = 1000 "Fluid density";
         DSFLib.Hydraulics.Interfaces.FluidPort fluidPort annotation(
           Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-2.22045e-16, -100}, extent = {{-16, -16}, {16, 16}}, rotation = 0)));
@@ -1044,55 +1354,71 @@ package DSFLib
         dp = if v > 0 or q > 0 then 0 else 1e10*q;
         fluidPort.q = q;
         fluidPort.p = p + dp;
-        annotation(
+  
+        annotation(Documentation(info="<html>
+  <p>
+  This model represents a simplified hydraulic tank used to store incompressible fluid in hydraulic circuits. The tank is characterized by a fixed cross-sectional area and assumes uniform fluid pressure and density throughout. The pressure is calculated based on the hydrostatic relation, considering the fluid height, gravity, and density. In order to avoid a negative volume, if the volume is zero, a high value valve is added.
+  </p>
+  </html>"),
           Diagram,
           Icon(coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}}), graphics = {Text(origin = {34, 65}, extent = {{-112, 15}, {54, -15}}, textString = "A=%A"), Text(extent = {{-95, -24}, {95, -44}}, textString = "%level_start"), Rectangle(fillColor = {85, 170, 255}, fillPattern = FillPattern.VerticalCylinder, extent = {{-100, -100}, {100, 10}}), Line(points = {{-100, 100}, {-100, -100}, {100, -100}, {100, 100}}), Text(textColor = {0, 0, 255}, extent = {{-150, 110}, {150, 150}}, textString = "%name")}));
       end Tank;
 
-      model Inertance
+      model Inertance "Linear Inertance"
         extends TwoPort;
-        parameter Real I(unit = "Pa.s2/m3") = 1;
+        parameter Real I(unit = "Pa.s2/m3") = 1 "Inertance";
       equation
         I*der(q) = p;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model represents the inertial resistance to changes in flow rate due to the mass of the fluid in a pipeline. It defines the relationship between the pressure difference across the component and the time derivative of the volumetric flow rate.</p>
+      </html>"),
           Icon(graphics = {Text(origin = {7, 65}, rotation = 180, extent = {{-99, 15}, {115, -27}}, textString = "I=%I"), Rectangle(rotation = -90, fillColor = {0, 170, 255}, fillPattern = FillPattern.VerticalCylinder, extent = {{-14, 96}, {14, -96}})}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end Inertance;
 
       model Column
+      "Fluid column"
         extends TwoPort;
         parameter Real H(unit = "m") = 1 "Column height";
-        parameter Real g(unit = "m/s2") = 9.8;
+        parameter Real g(unit = "m/s2") = 9.8 "Gravity";
         parameter Real rho(unit = "Kg/m3") = 1000 "Fluid density";
       equation
         p = rho*g*H;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model represents a static fluid column that generates hydrostatic pressure based on its height. The component is useful for representing the pressure contribution of a vertical fluid segment in hydraulic systems.</p>
+      </html>"),
           Icon(graphics = {Rectangle(rotation = -90, fillColor = {0, 170, 255}, fillPattern = FillPattern.VerticalCylinder, extent = {{-14, 96}, {14, -96}}), Text(origin = {7, 57}, rotation = 180, extent = {{-101, 15}, {117, -27}}, textString = "H=%H")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end Column;
 
-      model ConstPress
-        parameter Pressure P = 0;
+      model ConstPress 
+      "Constant pressure"
+        parameter Pressure P = 0 "Pressure value";
         DSFLib.Hydraulics.Interfaces.FluidPort fluidPort annotation(
           Placement(visible = true, transformation(origin = {94, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -1.11022e-15}, extent = {{-16, -16}, {16, 16}}, rotation = 0)));
       equation
         fluidPort.p = P;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model defines a constant pressure at a specific point in the hydraulic circuit. At least one constant pressure boundary condition must be included in every circuit to ensure a well-posed system.</p>
+      </html>"),
           Icon(graphics = {Rectangle(origin = {71, 0}, fillColor = {0, 127, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-29, 32}, {29, -32}}), Ellipse(fillColor = {0, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-80, 80}, {80, -80}}), Text(origin = {0, -200}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Text(origin = {-25, 102}, rotation = 180, extent = {{-199, 17}, {145, -24}}, textString = "P=%P")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end ConstPress;
 
       model IdealPump
+      "Ideal pump"
         extends TwoPort;
-        parameter Real Q(unit = "m3/s") = 1e-3;
+        parameter Real Q(unit = "m3/s") = 1e-3 "Flow rate value"; 
       equation
         q = Q;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model defines a constant flow rate at a branch of the hydraulic circuit.</p>
+      </html>"),
           Icon(graphics = {Text(origin = {-17, 107}, rotation = 180, extent = {{-181, 18}, {131, -21}}, textString = "Q=%Q"), Polygon(fillColor = {255, 255, 255}, pattern = LinePattern.None, fillPattern = FillPattern.HorizontalCylinder, points = {{-28, 30}, {-28, -30}, {50, -2}, {-28, 30}}), Polygon(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.VerticalCylinder, points = {{-48, -60}, {-72, -100}, {72, -100}, {48, -60}, {-48, -60}}), Rectangle(fillColor = {0, 127, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, 32}, {100, -32}}), Ellipse(fillColor = {26, 182, 199}, fillPattern = FillPattern.Sphere, extent = {{-80, 80}, {80, -80}}), Polygon(origin = {5, -3}, fillColor = {0, 170, 255}, fillPattern = FillPattern.Solid, points = {{-33, 51}, {49, 1}, {-33, -43}, {-33, 49}, {-33, 51}}), Text(origin = {0, -200}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end IdealPump;
     end Components;
 
-    package Examples
+    package Examples "Examples that demonstrate the usage of the hydraulic components"
       import DSFLib.Hydraulics.Components.*;
 
-      model TankValve
+      model TankValve "Tank valve"
         DSFLib.Hydraulics.Components.Column column annotation(
           Placement(visible = true, transformation(origin = {0, 6}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
         DSFLib.Hydraulics.Components.Tank tank(v(start = 1)) annotation(
@@ -1116,10 +1442,19 @@ package DSFLib
           Line(points = {{-68, 30}, {-54, 30}}));
         connect(idealPump.fluidPort_a, tank.fluidPort) annotation(
           Line(points = {{-34, 30}, {0, 30}, {0, 40}}));
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This example is an hydraulic circuit, which consists of an ideal pump delivering a constant flow rate into a tank. The tank is connected to a vertical fluid column that generates hydrostatic pressure based on its height. Downstream, a valve introduces flow resistance, and the system is bounded by two constant pressure sources. 
+      </p>
+      </html>"),
           experiment(StartTime = 0, StopTime = 10000, Tolerance = 1e-06, Interval = 20));
       end TankValve;
     end Examples;
+   annotation(Documentation(info="<html>
+  <p>
+  This library contains hydraulic components for building hydraulic circuits. The main assumption is that the fluid is incompressible this allows to establish an analogy between the electrical and hydraulic circuits.
+  </p>
+  
+  </html>")); 
   end Hydraulics;
 
   package Thermal
@@ -1724,50 +2059,76 @@ package DSFLib
     end ElectroThermal;
   end MultiDomain;
 
-  package ControlSystems
-    package Blocks
-      package Interfaces
-        connector RealInput = input Real annotation(
+  package ControlSystems "Library of basic control system components"
+    package Blocks "Library of basic input/output control blocks"
+      package Interfaces "Library of connectors and partial models for input/output blocks"
+        connector RealInput = input Real "'input Real' as connector" annotation(
           Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}})}),
-          Diagram(graphics = {Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}}), Text(origin = {-12, -6}, textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
-        connector RealOutput = output Real annotation(
+          Diagram(graphics = {Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}}), Text(origin = {-12, -6}, textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})), Documentation(info="<html>
+  <p>
+  Connector with one input signal of type Real.
+  </p>
+  </html>"));
+        connector RealOutput = output Real "'output Real' as connector" annotation(
           Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}})}),
-          Diagram(graphics = {Text(origin = {-12, -6}, textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name"), Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}})}));
+          Diagram(graphics = {Text(origin = {-12, -6}, textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name"), Polygon(lineColor = {0, 0, 127}, fillColor = {0, 0, 127}, fillPattern = FillPattern.Solid, points = {{-100, 100}, {102, 0}, {-100, -100}, {-100, 100}})}),Documentation(info="<html>
+  <p>
+  Connector with one output signal of type Real.
+  </p>
+  </html>"));
 
-        partial block SISO
-          RealInput u annotation(
+        partial block SISO "Single input single output system"
+          RealInput u "Connector of Real input signal" annotation(
             Placement(visible = true, transformation(origin = {-110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-          DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
+          DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y "Connector of Real output signal" annotation(
             Placement(visible = true, transformation(origin = {110, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        Block has one real input and one real output signal.
+        </p>
+        </html>"),
             Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}})}));
         end SISO;
 
-        partial block SO
-          RealOutput y annotation(
+        partial block SO "Single output continuous control block"
+          RealOutput y "Connector of Real output signal" annotation(
             Placement(visible = true, transformation(origin = {110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-          annotation(
-            Icon(graphics = {Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}})}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
+          annotation(Documentation(info="<html>
+        <p>
+        Block has one continuous Real output signal.
+        </p>
+        </html>"), Icon(graphics = {Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}})}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end SO;
       end Interfaces;
 
-      package Components
-        block Integrator
+      package Components "Control blocks"
+        block Integrator "Integrator block"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO(y.start = y_0);
           parameter Real y_0 = 0;
         equation
           der(y) = u;
-          annotation(
+          annotation(Documentation(info="<html>
+      <p>
+      This blocks computes output <strong>y</strong> as
+      <em>integral</em> of the input <strong>u</strong>. In the Laplace domain it can be expressed as:
+      </p>
+      <blockquote><pre>
+        
+      y = u/s
+        
+      </pre></blockquote>
+      
+      </html>"),
             Icon(graphics = {Bitmap(origin = {-2, 2}, extent = {{90, 82}, {-90, -82}}, imageSource = "iVBORw0KGgoAAAANSUhEUgAAAC4AAABcCAYAAAARU4f9AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAuIwAALiMBeKU/dgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAQCSURBVHic7ZtLbE1BGMd/+qDe9agq9Wix8IgEQSQshB2xQCKxsbXASiI2EqzsEJFILHQhNixYEalIhISIRNBoqVSjGvEoFbSathZzj557zszc05xvzp0m95+cRb+Z+ebX737nzJk5M1B81QHHgGbgEzAA9ALtwA3gEDCraHQajQdOA7+B4dz1E3gNtAJ9IXsfcAaYUhTSkGYBjxgB6wB2AhWhOuXABuAs0J+r9xyYlyVoWFXkQ7/DngqVwAlgKFf/KerXylxXGYEeArZY6k4DHobqB9dhx4wx7Y0ANBeof4Y49DDwxCFjTJOBzgjA7gJtWtCD97rDjOtopPPfwIQCbdrQg391h5mvCuB9pPO7CdqdRw/e5AYzrj2azo8naDcduBNpdx+Y7YRSo+vEwbePov1aYB+wTh7NrKnkj47BVbSBJKl2EYfuSeu0LK2DBNqqsbWkdZoF+GaNrSOtU9fgZcByjb1LwrFLNaBGzKi60zp2Db7KYPcefKXB/jGtY9fgKwz2z2kdFyviXxz3m1o/iQ8+g6hpmbeqxeErqctUWWKwi6SJS/BGg70UcVdqMNjHbMS9Bx+TOT4RtZipk9c53giMM5R5HfHFljKvwRdZyrxOlQWWMq/BFxrsIjN8yD7ivcBfiQ6yjrjYYqUL8HLMq1RiEwgX4HWozx86eR1x2xPFa3DbMzz17D6QC3DTjQkC6ymBXIDXW8q8jrjprRAE1gwDuQCvtZR5HXET+DCCOe5C39Gvp6RedgtLOuJVqC9lOomlCciD11jKRNNEGnyupaxTsiNpcNsTxWvwOZYyr8FtOT5mwTskO5IGN21RGkRwuAd5cNOuhm7UtjwxZRXx98L9ZBZx0RsTShEH1Oy+2lDmdcRnWPx5HXHbPql2wX6AbMCHEB58QBbcdGN2oTb1iiqLiIunCWQT8XeCffxXCZxSqiRTKeLATI3tB462TEuC62Y/rYL+8yQFXoZ6V4nqlZB/bYcSqkW/z8p7cNNi/ksh/zFJgZu++4zJiPciPLMPyyX4M9TyshNJga/W2G4L+Xaqz8QX8nX/jFeaTxy6FfMOIREFxxArUYcwluU6vYVaNkui9RpbEw7zO1A98IL4Ibikhz4vRdoOYP/WKaZr6D82nUvYPnrw7oo8ol496MGTvCBtJB7tpW4w81WGeS93ktXVI5G/LwJvUxGNQo/RR/xUgXYNqG1KQf02YJI7zLgOEoe+WQCiHHgQqv8LlTaZqoKRw8/9wIEC9SuBy4xA/2F0JwVFVYN6BA6jzsBfADaRv0WpHNhB/uHnD+jPsmWqKuAk6mcPwPqBN7krfMB/EDXI6GY9mUg3LFcD+4FtwBrUt8tK4BvqVOA91LPfybJDUv0D7tQsfW31v+gAAAAASUVORK5CYII="), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end Integrator;
 
-        block StateSpace
+        block StateSpace "Continuos linear state space (SISO)"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO;
-          parameter Real A[:, size(A, 1)] = [0, 1; -1, -1];
-          parameter Real B[size(A, 1), 1] = [0; 1];
-          parameter Real C[1, size(A, 1)] = [1, 0];
-          parameter Real D[1, 1] = [0];
-          parameter Real x_0[size(A, 1), 1] = [0; 0];
+          parameter Real A[:, size(A, 1)] = [0, 1; -1, -1] "State matrix";
+          parameter Real B[size(A, 1), 1] = [0; 1] "Input matrix";
+          parameter Real C[1, size(A, 1)] = [1, 0] "Output matrix";
+          parameter Real D[1, 1] = [0] "Feedthrough matrix";
+          parameter Real x_0[size(A, 1), 1] = [0; 0] "Initial state";
           Real x[size(A, 1), 1](start = x_0);
         protected
           Real ymat[1, 1];
@@ -1775,21 +2136,46 @@ package DSFLib
           der(x) = A*x + B*u;
           ymat = C*x + D*u;
           y = ymat[1, 1];
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The State space block defines the (linear) relation
+        between the input <strong>u</strong> and the output
+        <strong>y</strong> in state space form:
+        </p>
+        <blockquote><pre>
+        der(x) = A * x + B * u
+          y  = C * x + D * u
+        </pre></blockquote>
+        <p>
+        The input <strong>u</strong> and the output <strong>y</strong> are scalars. If nx is the number of states, then the dimentions of the matrices are:
+        </p>
+        <blockquote><pre>
+        A(nx,nx)
+        B(nx,1)
+        C(1,nx)
+        D(1,1)
+        </pre></blockquote>
+        <p>
+        
+        </html>"),
             Icon(graphics = {Text(origin = {-2, 44}, extent = {{-90, 22}, {90, -22}}, textString = "x=Ax+Bu"), Text(origin = {-67, 69}, extent = {{-19, 17}, {19, -17}}, textString = ".", textStyle = {TextStyle.Bold}), Text(origin = {0, -30}, extent = {{-90, 22}, {90, -22}}, textString = "y=Cx+Du"), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end StateSpace;
 
-        block StepSource
+        block StepSource "Step signal source"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SO;
           parameter Real U = 1 "Step amplitude";
           parameter Real Ti = 0 "Initial Step Time";
         equation
           y = if time < Ti then 0 else U;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The real output <strong>y</strong> is a step signal with amplitud <strong>U</strong> at time <strong>Ti</strong>. The initial value of the step is zero.
+        </p>
+        </html>"),
             Icon(graphics = {Text(origin = {0, -130}, extent = {{-102, 28}, {102, -28}}, textString = "U=%U"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Line(origin = {0, -10}, points = {{-80, 80}, {-80, -80}}, color = {95, 95, 95}), Line(origin = {-31.64, -9.64}, points = {{-48, -70}, {0, -70}, {0, 56}, {100, 56}}, thickness = 0.5), Polygon(origin = {0, -10}, lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{90, -70}, {68, -64}, {68, -76}, {90, -70}}), Polygon(lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{-80, 90}, {-86, 68}, {-74, 68}, {-80, 90}}), Line(origin = {0, -10}, points = {{-90, -70}, {82, -70}}, color = {95, 95, 95}), Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name")}));
         end StepSource;
 
-        model RampSource
+        model RampSource "Ramp signal source"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SO;
           parameter Real tf(unit = "s") = 1, t0(unit = "s") = 0;
           parameter Real U = 1 "Final Value";
@@ -1801,31 +2187,43 @@ package DSFLib
           else
             y = U*(time - t0)/(tf - t0);
           end if;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The real output <strong>y</strong> is a ramp signal with a final value <strong>U</strong>. The growth starts at time <strong>t0</strong> and ends at time <strong>tf</strong>. The initial value of the signal is zero.
+        </p>
+        </html>"),
             Icon(graphics = {Text(origin = {0, -130}, extent = {{-102, 28}, {102, -28}}, textString = "U=%U"), Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Polygon(origin = {0, -10}, lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{90, -70}, {68, -64}, {68, -76}, {90, -70}}), Line(origin = {0, -10}, points = {{-80, 80}, {-80, -80}}, color = {95, 95, 95}), Line(origin = {-32.2095, -9.64004}, points = {{-48, -70}, {-18, -70}, {70, 56}, {100, 56}}, thickness = 0.5), Polygon(lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{-80, 90}, {-86, 68}, {-74, 68}, {-80, 90}}), Line(origin = {0, -10}, points = {{-90, -70}, {82, -70}}, color = {95, 95, 95})}));
         end RampSource;
 
-        block PulseSource
+        block PulseSource "Pulse signal source"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SO;
           parameter Real U = 1 "Step amplitude";
           parameter Real Ti = 0 "Initial Step Time";
           parameter Real Tf = 0 "Final Step Time";
         equation
           y = if (time < Ti) or (time > Tf) then 0 else U;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The real output <strong>y</strong> is a pulse signal with amplitud <strong>U</strong>. The pulse starts at time <strong>Ti</strong> and ends at time <strong>Tf</strong>. The initial and final values are zero.
+        </p>
+        </html>"),
             Icon(graphics = {Text(origin = {0, -130}, extent = {{-102, 28}, {102, -28}}, textString = "U=%U"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Line(origin = {0, -10}, points = {{-80, 80}, {-80, -80}}, color = {95, 95, 95}), Line(origin = {-31.64, -9.64}, points = {{-48, -70}, {0, -70}, {0, 56}, {24, 56}}, thickness = 0.5), Polygon(origin = {0, -10}, lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{90, -70}, {68, -64}, {68, -76}, {90, -70}}), Polygon(lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{-80, 90}, {-86, 68}, {-74, 68}, {-80, 90}}), Line(origin = {0, -10}, points = {{-90, -70}, {82, -70}}, color = {95, 95, 95}), Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Line(origin = {18.48, -16.5}, points = {{-25.9921, 62.9921}, {-23.9921, -63.0079}, {26.0079, -63.0079}, {40.0079, -63.0079}}, thickness = 0.5)}));
         end PulseSource;
 
-        block ConstSource
+        block ConstSource "Constant signal source"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SO;
           parameter Real U = 1 "Value";
         equation
           y = U;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The real output <strong>y</strong> is a constant signal with value <strong>U</strong>.
+        </p>
+        </html>"),
             Icon(graphics = {Text(origin = {0, -130}, extent = {{-102, 28}, {102, -28}}, textString = "U=%U"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Line(origin = {0, -10}, points = {{-80, 80}, {-80, -80}}, color = {95, 95, 95}), Polygon(origin = {0, -10}, lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{90, -70}, {68, -64}, {68, -76}, {90, -70}}), Polygon(lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{-80, 90}, {-86, 68}, {-74, 68}, {-80, 90}}), Line(origin = {0, -10}, points = {{-90, -70}, {82, -70}}, color = {95, 95, 95}), Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Line(origin = {-37.7419, -47.2671}, points = {{-42, 56}, {-28, 56}, {0, 56}, {106, 56}}, thickness = 0.5)}));
         end ConstSource;
 
-        block Add
+        block Add "Output the sum of the two inputs"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SO;
           parameter Real k1 = 1 "Gain on first input";
           parameter Real k2 = 1 "Gain on second input";
@@ -1835,11 +2233,20 @@ package DSFLib
             Placement(visible = true, transformation(origin = {-110, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-110, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
         equation
           y = k1*u1 + k2*u2;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        This blocks computes output <strong>y</strong> as (weighted) <em>sum</em> of the
+        two input signals <strong>u1</strong> and <strong>u2</strong>:
+        </p>
+        <blockquote><pre>
+        <strong>y</strong> = k1*<strong>u1</strong> + k2*<strong>u2</strong>;
+        </pre></blockquote>
+        <p>
+        </html>"),
             Icon(graphics = {Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {-63, 58}, extent = {{-29, 22}, {29, -22}}, textString = "%k1"), Text(origin = {-63, -58}, extent = {{-29, 22}, {29, -22}}, textString = "%k2"), Line(origin = {19.0908, -8}, points = {{0, 40}, {0, -40}}, thickness = 0.5), Line(origin = {19.6908, -8}, points = {{-40, 0}, {40, 0}}, thickness = 0.5), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end Add;
 
-        block TransferFunction
+        block TransferFunction "Continuos transfer function"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO;
           parameter Real num[:] = {1} "Numerator coefficients";
           parameter Real den[:] = {1, 1} "Denominator coefficients";
@@ -1856,26 +2263,64 @@ package DSFLib
           der(x) = A*x + B*u;
           ymat = C*x + D*u;
           y = ymat[1, 1];
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        This block defines the transfer function between the input
+        <strong>u</strong> and the output <strong>y</strong>
+        as (nnum = dimension of num, nden = dimension of den):
+        </p>
+        <pre>
+        y(s)   num[1]*s^[nnum-1] + num[2]*s^[nnum-2] + ... + num[nnum]
+        ---- = -------------------------------------------------------
+        u(s)   den[1]*s^[nden-1] + den[2]*s^[nden-2] + ... + den[nden]
+        </pre>
+        <p>
+        The transfer function must be proper (nden>=nnum).
+        </p>
+        <p>
+        Example:
+        </p>
+        <pre>
+        TransferFunction g(num = {5,2}, den = {1,2});
+        </pre>
+        <p>
+        results in the following transfer function:
+        </p>
+        <pre>
+         5*s + 2
+        ---------
+          s + 2
+        </pre>
+        </html>"),
             Icon(graphics = {Text(origin = {7, 1}, extent = {{-65, 57}, {65, -57}}, textString = "H(s)"), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end TransferFunction;
 
-        block Gain
+        block Gain "Gain block"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO;
           parameter Real K = 1 "Gain";
         equation
           y = K*u;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        This block computes output <strong>y</strong> as
+        <em>product</em> of gain <strong>K</strong> with the
+        input <strong>u</strong>:
+        </p>
+        <blockquote><pre>
+        y = K * u;
+        </pre></blockquote>
+        
+        </html>"),
             Icon(graphics = {Text(origin = {0, 4}, extent = {{-98, 24}, {98, -24}}, textString = "K=%K"), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end Gain;
 
-        block DiscreteStateSpace
+        block DiscreteStateSpace "Discrete linear state space (SISO)"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO;
-          parameter Real A[:, size(A, 1)] = [0.5, 0.5; -0.5, 0.5];
-          parameter Real B[size(A, 1), 1] = [0; 1];
-          parameter Real C[1, size(A, 1)] = [1, 0];
-          parameter Real D[1, 1] = [0];
-          parameter Real x_0[size(A, 1), 1] = [0; 0];
+          parameter Real A[:, size(A, 1)] = [0.5, 0.5; -0.5, 0.5] "State matrix";
+          parameter Real B[size(A, 1), 1] = [0; 1] "Input matrix";
+          parameter Real C[1, size(A, 1)] = [1, 0] "Output matrix";
+          parameter Real D[1, 1] = [0] "Feedthrough matrix";
+          parameter Real x_0[size(A, 1), 1] = [0; 0] "Initial state";
           parameter Real T = 0.1 "Sample Period";
           discrete Real x[size(A, 1), 1](start = x_0);
         protected
@@ -1887,11 +2332,32 @@ package DSFLib
             ymat := C*x + D*u;
             x := A*x + B*u;
           end when;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        The discrete state space block defines the (linear) relation
+        between the input <strong>u</strong> and the output
+        <strong>y</strong> in state space form:
+        </p>
+        <blockquote><pre>
+        x(k) = A * x(k-1) + B * u(k)
+        y(k)  = C * x(k-1) + D * u(k)
+        </pre></blockquote>
+        <p>
+        The input <strong>u</strong> and the output <strong>y</strong> are scalars. If nx is the number of states, then the dimentions of the matrices are:
+        </p>
+        <blockquote><pre>
+        A(nx,nx)
+        B(nx,1)
+        C(1,nx)
+        D(1,1)
+        </pre></blockquote>
+        <p>
+        
+        </html>"),
             Icon(graphics = {Text(origin = {-2, 44}, extent = {{-90, 22}, {90, -22}}, textString = "x⁺=Ax+Bu"), Text(origin = {0, -30}, extent = {{-90, 22}, {90, -22}}, textString = "y=Cx+Du"), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end DiscreteStateSpace;
 
-        block DiscreteTransferFunction
+        block DiscreteTransferFunction "Discrete Transfer Function block"
           extends DSFLib.ControlSystems.Blocks.Interfaces.SISO;
           parameter Real num[:] = {1, -0.95} "Numerator coefficients";
           parameter Real den[:] = {1, -1} "Denominator coefficients";
@@ -1910,13 +2376,41 @@ package DSFLib
             ulast[1] := u;
             ylast[1] := (-ylast[2:n]*den[2:n]/den[1]) + ulast[n - m + 1:n]*num[1:m]/den[1];
           end when;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>
+        This block defines the transfer function between the input
+        <strong>u</strong> and the output <strong>y</strong>
+        as (nnum = dimension of num, nden = dimension of den):
+        </p>
+        <pre>
+        y(z)   num[1]*z^[nnum-1] + num[2]*z^[nnum-2] + ... + num[nnum]
+        ---- = -------------------------------------------------------
+        u(z)   den[1]*z^[nden-1] + den[2]*z^[nden-2] + ... + den[nden]
+        </pre>
+        <p>
+        The transfer function must be proper (nden>=nnum).
+        </p>
+        <p>
+        Example:
+        </p>
+        <pre>
+        TransferFunction g(num = {5,2}, den = {1,0.5});
+        </pre>
+        <p>
+        results in the following transfer function:
+        </p>
+        <pre>
+         5*z + 2
+        ---------
+          z + 0.5
+        </pre>
+        </html>"),
             Icon(graphics = {Text(origin = {7, 1}, extent = {{-65, 57}, {65, -57}}, textString = "H(z)"), Text(textColor = {0, 0, 255}, extent = {{-150, 150}, {150, 110}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
         end DiscreteTransferFunction;
       end Components;
 
-      package Examples
-        model ControlSystem1
+      package Examples "Examples that demonstrate the usage of the control blocks"
+        model ControlSystem1 "Control system (PI)"
           DSFLib.ControlSystems.Blocks.Components.StepSource stepSource annotation(
             Placement(visible = true, transformation(origin = {-78, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.ControlSystems.Blocks.Components.StateSpace stateSpace annotation(
@@ -1949,9 +2443,14 @@ package DSFLib
           connect(gain.u, add.y) annotation(
             Line(points = {{-16, 20}, {-20, 20}, {-20, 2}, {-26, 2}}));
         protected
+        annotation(Documentation(info="<html>
+        <p>
+        This block diagram represents a test control system. A step input signal (reference) is applied to the system. The control loop consists of a PI controller, a process model represented in state-space form, and a sensor model represented by a transfer function.
+        </p>
+        </html>"));
         end ControlSystem1;
 
-        model DiscreteControlSystem
+        model DiscreteControlSystem "Discrete control system (PI)"
           DSFLib.ControlSystems.Blocks.Components.StepSource stepSource annotation(
             Placement(visible = true, transformation(origin = {-62, 14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.ControlSystems.Blocks.Components.DiscreteTransferFunction discreteControl(den = {1, -1}, num = {1, -0.95}) annotation(
@@ -1970,222 +2469,265 @@ package DSFLib
           connect(plant.y, add.u2) annotation(
             Line(points = {{82, 8}, {90, 8}, {90, -18}, {-32, -18}, {-32, 2}, {-26, 2}}));
         protected
+        annotation(Documentation(info="<html>
+        <p>
+        This block diagram represents a test discrete control system. A step input signal (reference) is applied to the system. The control loop consists of a discrete controller (PI) and a process discrete model represented in state-space form.
+        </p>
+        </html>"));
         end DiscreteControlSystem;
       end Examples;
     end Blocks;
 
-    package Sensors
-      package Circuits
-        model VoltageSensor
+    package Sensors "Sensors"
+      package Circuits "Electrical sensors"
+        model VoltageSensor "Ideal voltage sensor"
           extends DSFLib.Circuits.Interfaces.OnePort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = v;
           i = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the voltage between two points of an electrical circuit without drawing current.</p>
+    </html>"),
             Icon(graphics = {Line(points = {{-70, 0}, {-90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{70, 0}, {90, 0}}), Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{0, 70}, {0, 40}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "V")}));
         end VoltageSensor;
 
-        model CurrentSensor
+        model CurrentSensor "Ideal current sensor"
           extends DSFLib.Circuits.Interfaces.OnePort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = i;
           v = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the current without producing any voltage drop.</p>
+    </html>"),
             Icon(graphics = {Line(points = {{-70, 0}, {-90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Text(textColor = {0, 0, 255}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Line(points = {{70, 0}, {90, 0}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "I"), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}})}));
         end CurrentSensor;
       end Circuits;
 
-      package Mechanical
-        package Translational
-          model ForceSensor
+      package Mechanical "Mechanical sensors"
+        package Translational "Translational sensors"
+          model ForceSensor "Ideal force sensor"
             extends DSFLib.Mechanical.Translational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = f;
             s_rel = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the force without affecting the position.</p>
+    </html>"),
               Icon(graphics = {Text(textColor = {0, 85, 0}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Line(points = {{70, 0}, {90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-70, 0}, {-90, 0}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "F"), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{0, 70}, {0, 40}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}})}));
           end ForceSensor;
 
-          model DistanceSensor
+          model DistanceSensor "Ideal distance sensor"
             extends DSFLib.Mechanical.Translational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = s_rel;
             f = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the distance between two points without producing any force.</p>
+    </html>"),
               Icon(graphics = {Line(points = {{70, 0}, {90, 0}}), Line(points = {{-70, 0}, {-90, 0}}), Text(textColor = {0, 85, 0}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "s_rel"), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}})}));
           end DistanceSensor;
 
-          model SpeedSensor
+          model SpeedSensor "Ideal speed sensor"
             extends DSFLib.Mechanical.Translational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = der(s_rel);
             f = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the relative speed between two points without producing any force.</p>
+    </html>"),
               Icon(graphics = {Line(points = {{70, 0}, {90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-70, 0}, {-90, 0}}), Text(textColor = {0, 85, 0}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "v_rel"), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{0, 70}, {0, 40}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}})}));
           end SpeedSensor;
         end Translational;
 
-        package Rotational
-          model TorqueSensor
+        package Rotational "Rotational sensors"
+          model TorqueSensor "Ideal torque sensor"
             extends DSFLib.Mechanical.Rotational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = tau;
             phi_rel = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the torque without affecting the angle.</p>
+    </html>"),
               Icon(graphics = {Line(points = {{70, 0}, {90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-70, 0}, {-90, 0}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "𝜏"), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}})}));
           end TorqueSensor;
 
-          model AngleSensor
+          model AngleSensor "Ideal angle sensor"
             extends DSFLib.Mechanical.Rotational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = phi_rel;
             tau = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the relative angle between two points without producing any torque.</p>
+    </html>"),
               Icon(graphics = {Line(points = {{70, 0}, {90, 0}}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Line(points = {{-70, 0}, {-90, 0}}), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "ϕ"), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}})}));
           end AngleSensor;
 
-          model AngSpeedSensor
+          model AngSpeedSensor "Ideal angular speed sensor"
             extends DSFLib.Mechanical.Rotational.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = der(phi_rel);
             tau = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the relative anglular speed two points without producing any torque.</p>
+    </html>"),
               Icon(graphics = {Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{70, 0}, {90, 0}}), Line(points = {{-70, 0}, {-90, 0}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "ω"), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{0, 70}, {0, 40}})}));
           end AngSpeedSensor;
         end Rotational;
 
-        package Planar
-          model ForceSensor
+        package Planar "Planar sensors"
+          model ForceSensor "Ideal force sensor (2-dim.)"
             extends DSFLib.Mechanical.Planar.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = f;
             l = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures each component of the force without affecting the position.</p>
+    </html>"),
               Icon(graphics = {Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{0, 70}, {0, 40}}), Line(origin = {2.72357, (0 - 6)}, points = {{-74, 0}, {-104, 0}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "F"), Line(points = {{70, 0}, {90, 0}}), Line(origin = {8, 0}, points = {{62, 0}, {90, 0}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}})}));
           end ForceSensor;
 
-          model DistanceSensor
+          model DistanceSensor "Ideal position sensor (2-dim.)"
             extends DSFLib.Mechanical.Planar.Interfaces.Compliant;
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
               Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
           equation
             y = l;
             f = 0;
-            annotation(
+            annotation(Documentation(info="<html>
+    <p>This sensor measures the each component of the relative position between two points without producing any force.</p>
+    </html>"),
               Icon(graphics = {Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{70, 0}, {90, 0}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(origin = {2.72357, (0 - 6)}, points = {{-74, 0}, {-104, 0}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{0, 70}, {0, 40}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "L"), Line(origin = {8, 0}, points = {{62, 0}, {90, 0}})}));
           end DistanceSensor;
         end Planar;
       end Mechanical;
 
-      package Hydraulics
-        model PressureSensor
+      package Hydraulics "Hydraulic sensors"
+        model PressureSensor "Ideal pressure sensor"
           extends DSFLib.Hydraulics.Interfaces.TwoPort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = p;
           q = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the difference of pressure between two points of an hydraulic circuit without drawing flow rate.</p>
+    </html>"),
             Icon(graphics = {Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-70, 0}, {-90, 0}}), Line(points = {{70, 0}, {90, 0}}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "P"), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{0, 70}, {0, 40}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}})}));
         end PressureSensor;
 
-        model FlowSensor
+        model FlowSensor "Ideal flow rate sensor"
           extends DSFLib.Hydraulics.Interfaces.TwoPort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = q;
           p = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the flow rate without producing any pressure drop.</p>
+    </html>"),
             Icon(graphics = {Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{-70, 0}, {-90, 0}}), Line(points = {{70, 0}, {90, 0}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{0, 70}, {0, 40}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "Q"), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{37.6, 13.7}, {65.8, 23.9}})}));
         end FlowSensor;
       end Hydraulics;
 
-      package Thermal
-        model TemperatureSensor
+      package Thermal "Thermal sensors"
+        model TemperatureSensor "Ideal temperature sensor"
           extends DSFLib.Thermal.Interfaces.TwoPort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = T_rel;
           q = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the difference of temperature between two points without drawing heat flow.</p>
+    </html>"),
             Icon(graphics = {Line(points = {{70, 0}, {90, 0}}), Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Line(points = {{-70, 0}, {-90, 0}}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}}), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "T_rel"), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}})}));
         end TemperatureSensor;
 
-        model HeatFlowSensor
+        model HeatFlowSensor "Ideal heat flow sensor"
           extends DSFLib.Thermal.Interfaces.TwoPort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {8, -90}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -118}, extent = {{-18, -18}, {18, 18}}, rotation = -90)));
         equation
           y = q;
           T_rel = 0;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>This sensor measures the heat flow without causing any change in the temperature.</p>
+    </html>"),
             Icon(graphics = {Ellipse(fillColor = {245, 245, 245}, fillPattern = FillPattern.Solid, extent = {{-70, -70}, {70, 70}}), Text(textColor = {64, 64, 64}, extent = {{-150, 80}, {150, 120}}, textString = "%name"), Text(origin = {-90, 66}, extent = {{20, -116}, {160, -86}}, textString = "q"), Line(points = {{37.6, 13.7}, {65.8, 23.9}}), Line(points = {{-70, 0}, {-90, 0}}), Polygon(rotation = -17.5, fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, points = {{-5, 0}, {-2, 60}, {0, 65}, {2, 60}, {5, 0}, {-5, 0}}), Ellipse(fillColor = {64, 64, 64}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-7, -7}, {7, 7}}), Line(points = {{-37.6, 13.7}, {-65.8, 23.9}}), Line(points = {{-22.9, 32.8}, {-40.2, 57.3}}), Line(points = {{0, 70}, {0, 40}}), Ellipse(lineColor = {64, 64, 64}, fillColor = {255, 255, 255}, extent = {{-12, -12}, {12, 12}}), Line(points = {{0, -100}, {0, -70}}, color = {0, 0, 127}), Line(points = {{22.9, 32.8}, {40.2, 57.3}}), Line(points = {{70, 0}, {90, 0}})}));
         end HeatFlowSensor;
       end Thermal;
+      annotation (
+        Documentation(info="<html>
+    <p>This package contains sensors from different domains. The sensors can be used to convert physical variables into Real signal values, which can be connected to components from the Blocks package. The sensors are designed so that they do not influence the physical system.</p>
+    </html>"));
     end Sensors;
 
-    package Actuators
-      package Circuits
+    package Actuators "Actuators"
+      package Circuits "Electrical actuators"
         import DSFLib.Circuits.Interfaces.*;
 
-        model ModulatedVoltageSource
+        model ModulatedVoltageSource "Modulated voltage source"
           extends OnePort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -64}, extent = {{-14, -14}, {14, 14}}, rotation = 90)));
         equation
           v = u;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>The modulated voltage source (ideal) is a converter of real valued signals into a voltage.</p>
+    </html>"),
             Icon(graphics = {Ellipse(lineColor = {0, 0, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-50, 50}, {50, -50}}), Line(points = {{-80, 20}, {-60, 20}}, color = {0, 0, 255}), Line(points = {{60, 20}, {80, 20}}, color = {0, 0, 255}), Text(textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Line(points = {{-90, 0}, {-50, 0}}, color = {0, 0, 255}), Line(points = {{-50, 0}, {50, 0}}, color = {0, 0, 255}), Line(points = {{50, 0}, {90, 0}}, color = {0, 0, 255}), Line(points = {{-70, 30}, {-70, 10}}, color = {0, 0, 255})}));
         end ModulatedVoltageSource;
 
-        model ModulatedCurrentSource
+        model ModulatedCurrentSource "Modulated current source"
           extends DSFLib.Circuits.Interfaces.OnePort;
           DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {0, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, -64}, extent = {{-14, -14}, {14, 14}}, rotation = 90)));
         equation
           i = -u;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>The modulated current source (ideal) is a converter of real valued signals into a current.</p>
+    </html>"),
             Icon(graphics = {Line(points = {{50, 0}, {90, 0}}, color = {0, 0, 255}), Text(textColor = {0, 0, 255}, extent = {{-150, 60}, {150, 100}}, textString = "%name"), Line(points = {{0, -50}, {0, 50}}, color = {0, 0, 255}), Line(points = {{-90, 0}, {-50, 0}}, color = {0, 0, 255}), Ellipse(lineColor = {0, 0, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-50, 50}, {50, -50}}), Polygon(origin = {44, 0}, rotation = 180, lineColor = {0, 0, 255}, fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, points = {{90, 0}, {60, 10}, {60, -10}, {90, 0}}), Line(origin = {14, 0}, points = {{-30, 0}, {30, 0}, {30, 0}}, color = {0, 0, 255})}));
         end ModulatedCurrentSource;
       end Circuits;
 
-      package Mechanical
-        model ModulatedForceSource
+      package Mechanical "Mechanical actuators"
+        model ModulatedForceSource "Modulated force source (1-dim.)"
           extends DSFLib.Mechanical.Translational.Interfaces.Compliant;
           DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {0, 98}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, 64}, extent = {{-14, 14}, {14, -14}}, rotation = -90)));
         equation
           flange_a.f = -u;
-          annotation(
+          annotation(Documentation(info="<html>
+    <p>The modulated force source (ideal) is a converter of real valued signals into a translational force.</p>
+    </html>"),
             Icon(graphics = {Text(origin = {0, -16}, textColor = {0, 0, 255}, extent = {{-150, -40}, {150, -80}}, textString = "%name"), Polygon(origin = {-6, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{90, 0}, {60, -30}, {60, -10}, {26, -10}, {26, 10}, {60, 10}, {60, 30}, {90, 0}}), Polygon(origin = {6, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-90, 0}, {-60, 30}, {-60, 10}, {-26, 10}, {-26, -10}, {-60, -10}, {-60, -30}, {-90, 0}}), Ellipse(lineColor = {0, 127, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-50, 50}, {50, -50}})}));
         end ModulatedForceSource;
       end Mechanical;
     end Actuators;
 
-    package Examples
-      package DCMotorControl
-        package Components
-          model DCMotorBlock
+    package Examples "Examples that demonstrate the usage of the control systems components"
+      package DCMotorControl "DC Motor Controller Example"
+        package Components "Package with components of DC motor controller"
+          model DCMotorBlock "DC motor"
             DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
               Placement(visible = true, transformation(origin = {-112, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-117, 1}, extent = {{-17, -17}, {17, 17}}, rotation = 0)));
             DSFLib.ControlSystems.Blocks.Interfaces.RealOutput y annotation(
@@ -2248,9 +2790,13 @@ package DSFLib
             annotation(
               Icon(graphics = {Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Bitmap(origin = {1, 3}, extent = {{89, -89}, {-89, 89}}, imageSource = "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")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
           end DCMotorBlock;
+          annotation(Documentation(info="<html>
+      <p>This model of a DC motor with separated exitation allows the control of armature voltage and the measurement of the rotor speed.
+      </p>
+      </html>"));
         end Components;
 
-        model ControlledDCMotor
+        model ControlledDCMotor "Controlled DC motor"
           DSFLib.ControlSystems.Examples.DCMotorControl.Components.DCMotorBlock motor annotation(
             Placement(visible = true, transformation(origin = {38, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           DSFLib.ControlSystems.Blocks.Components.Add add(k2 = -1) annotation(
@@ -2268,13 +2814,16 @@ package DSFLib
             Line(points = {{50, 0}, {60, 0}, {60, -20}, {-60, -20}, {-60, -6}, {-54, -6}}, color = {0, 0, 127}));
           connect(reference.y, add.u1) annotation(
             Line(points = {{-79, 6}, {-54, 6}}, color = {0, 0, 127}));
-          annotation(
+          annotation(Documentation(info="<html>
+      <p>This example shows a proportional speed controller for a DC motor. The speed reference is a ramp signal in order to avoid current peaks.
+      </p>
+      </html>"),
             experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.004));
         end ControlledDCMotor;
       end DCMotorControl;
 
       package QuarterVehicle
-        model QuarterVehiclePasiveSuspention
+        model QuarterVehiclePasiveSuspention "Quarter vehicle pasive suspention"
           Mechanical.Translational.Components.Mass mc(m = 300, s(start = 0.9319)) annotation(
             Placement(visible = true, transformation(origin = {-1.77636e-15, 64}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
           Mechanical.Translational.Components.Mass mr(m = 30, s(start = 0.3792)) annotation(
@@ -2312,23 +2861,27 @@ package DSFLib
             Line(points = {{0, -6}, {28, -6}, {28, -28}}));
           connect(softPulseSource.y, modulatedPosition.u) annotation(
             Line(points = {{-58, -66}, {-46, -66}}));
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>This example represents a simplified suspension system. It consists of two masses connected by a spring and a damper, simulating the body and the wheel of a vehicle. A pulse-modulated position allows the analysis of the suspension response to road disturbances.</p>
+        </html>"),
             Diagram,
             experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02));
         end QuarterVehiclePasiveSuspention;
 
-        model ModulatedPosition
+        model ModulatedPosition "Modulated position (1-dim.)"
           ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-112, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
           Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
         equation
           flange.s = u;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>The modulated position is a converter of real valued signals into a position.</p>
+        </html>"),
             Icon(graphics = {Line(points = {{0, 52}, {0, 32}}, color = {0, 127, 0}), Line(origin = {0.490654, 41.215}, points = {{-30, -100}, {30, -100}}, color = {0, 127, 0}), Text(textColor = {0, 0, 255}, extent = {{150, 60}, {-150, 100}}, textString = "%name"), Rectangle(lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, extent = {{-100, 20}, {100, -20}}), Line(origin = {0.490654, 41.215}, points = {{-10, -120}, {10, -100}}, color = {0, 127, 0}), Line(origin = {0.490654, 41.215}, points = {{10, -120}, {30, -100}}, color = {0, 127, 0}), Line(points = {{-29, 32}, {30, 32}}, color = {0, 127, 0}), Line(points = {{-30, -32}, {30, -32}}, color = {0, 127, 0}), Line(origin = {0.490654, 41.215}, points = {{-30, -120}, {-10, -100}}, color = {0, 127, 0}), Line(origin = {0.490654, 41.215}, points = {{-50, -120}, {-30, -100}}, color = {0, 127, 0}), Line(origin = {0.490654, 41.215}, points = {{0, -74}, {0, -100}}, color = {0, 127, 0})}));
         end ModulatedPosition;
 
-        block SoftPulseSource
+        block SoftPulseSource "Soft pulse signal source"
           parameter Real t1(unit = "s") = 0, t2(unit = "s") = 1, t3(unit = "s") = 5, t4(unit = "s") = 6, U = 1 "Amplitude";
           ControlSystems.Blocks.Interfaces.RealOutput y annotation(
             Placement(visible = true, transformation(origin = {110, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {116, -8.88178e-16}, extent = {{-16, -16}, {16, 16}}, rotation = 0)));
@@ -2345,13 +2898,16 @@ package DSFLib
             Line(points = {{26, -16}, {36, -16}, {36, -6}, {50, -6}}));
           connect(add.y, y) annotation(
             Line(points = {{74, 0}, {110, 0}}));
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>The real output <strong>y</strong> is a soft pulse signal generated by the superposirion of two ramps. The pulse has amplitud <strong>U</strong>. The growth starts at time <strong>t1</strong> and ends at time <strong>t2</strong>. The decrease starts at time <strong>t3</strong> and ends at time <strong>t4</strong>. The initial value of the soft puulse is zero.
+        </p>
+        </html>"),
             Icon(graphics = {Text(origin = {0, -130}, extent = {{-102, 28}, {102, -28}}, textString = "U=%U"), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Line(origin = {0, -10}, points = {{-80, 80}, {-80, -80}}, color = {95, 95, 95}), Line(origin = {-31.99, -9.28}, points = {{-48, -70}, {-30, -70}, {10, 56}, {42, 56}}, thickness = 0.5), Polygon(origin = {0, -10}, lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{90, -70}, {68, -64}, {68, -76}, {90, -70}}), Polygon(lineColor = {95, 95, 95}, fillColor = {95, 95, 95}, fillPattern = FillPattern.Solid, points = {{-80, 90}, {-86, 68}, {-74, 68}, {-80, 90}}), Line(origin = {0, -10}, points = {{-90, -70}, {82, -70}}, color = {95, 95, 95}), Text(origin = {-2, 42}, textColor = {0, 0, 255}, extent = {{-150, 70}, {150, 110}}, textString = "%name"), Line(origin = {-30.4744, -11.5609}, points = {{96, -68}, {80, -68}, {42, 58}, {42, 58}}, thickness = 0.5)}));
         end SoftPulseSource;
       end QuarterVehicle;
 
       package TwoInertiasSystem
-        model TwoInertiasSystem
+        model TwoInertiasSystem "Two inertias system"
           DSFLib.Mechanical.Rotational.Components.Fixed fixed annotation(
             Placement(visible = true, transformation(origin = {-78, 0}, extent = {{-10, 10}, {10, -10}}, rotation = 90)));
           DSFLib.Mechanical.Rotational.Components.Inertia inertia_1(J = 0.009) annotation(
@@ -2391,22 +2947,35 @@ package DSFLib
             Line(points = {{22, 0}, {16, 0}, {16, -30}, {10, -30}}));
           connect(damper1.flange_a, fixed.flange) annotation(
             Line(points = {{-10, -30}, {-70, -30}, {-70, 0}, {-78, 0}}));
-        annotation(
+        annotation(Documentation(info="<html>
+        <p>
+        This example models two damped rotational spring-inertia systems connected in series. The system is driven by a modulated torque source controlled by a pulse signal.
+        </p>
+        </html>"),
             experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-06, Interval = 0.02));
 end TwoInertiasSystem;
 
-        model TauSource
+        model TauSource "Modulated torque source"
           DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-108, 0}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
           DSFLib.Mechanical.Rotational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
         equation
           flange.tau = -u;
-          annotation(
+          annotation(Documentation(info="<html>
+        <p>The modulated torque source (ideal) is a converter of real valued signals into a torque.</p>
+        </html>"),
             Icon(graphics = {Polygon(fillPattern = FillPattern.Solid, points = {{-53, -54}, {-36, -30}, {-50, -24}, {-53, -54}}), Line(points = {{-30, -100}, {30, -100}}), Text(extent = {{-62, -29}, {-141, -70}}, textString = "tau"), Line(points = {{-10, -120}, {10, -100}}), Line(points = {{-30, -120}, {-10, -100}}), Line(points = {{10, -120}, {30, -100}}), Line(points = {{-50, -120}, {-30, -100}}), Text(textColor = {0, 0, 255}, extent = {{-150, 110}, {150, 70}}, textString = "%name"), Polygon(origin = {-4, 6}, fillPattern = FillPattern.Solid, points = {{86, 0}, {66, 58}, {37, 27}, {86, 0}}), Line(points = {{0, -10}, {0, -101}}), Line(points = {{-84, 0}, {-78, 18}, {-58, 46}, {-26, 60}, {26, 60}, {60, 40}, {82, 8}}, thickness = 0.5, smooth = Smooth.Bezier), Line(points = {{-50, -40}, {-38, -24}, {-18, -12}, {0, -8}, {18, -12}, {38, -24}, {50, -40}}, smooth = Smooth.Bezier)}));
         end TauSource;
       end TwoInertiasSystem;
     end Examples;
+    annotation (
+    Documentation(info="<html>
+  <p>
+  This library contains components to build up control systems.
+  </p>
+  
+  </html>"));
   end ControlSystems;
 
   package BondGraph
