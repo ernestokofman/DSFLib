@@ -148,7 +148,7 @@ package DSFLib
           Icon(graphics = {Line(origin = {-0.02, 50.73}, points = {{-60, 0}, {60, 0}}, color = {0, 0, 255}), Line(origin = {0.3, 32.6}, points = {{-60, 0}, {60, 0}}, color = {0, 0, 255}), Line(points = {{-30, 0}, {-29, 6}, {-22, 14}, {-8, 14}, {-1, 6}, {0, 0}}, color = {0, 0, 255}, smooth = Smooth.Bezier), Line(points = {{-60, 0}, {-59, 6}, {-52, 14}, {-38, 14}, {-31, 6}, {-30, 0}}, color = {0, 0, 255}, smooth = Smooth.Bezier), Text(origin = {0, -128}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name"), Line(points = {{-90, 0}, {-60, 0}}, color = {0, 0, 255}), Line(points = {{30, 0}, {31, 6}, {38, 14}, {52, 14}, {59, 6}, {60, 0}}, color = {0, 0, 255}, smooth = Smooth.Bezier), Line(points = {{0, 0}, {1, 6}, {8, 14}, {22, 14}, {29, 6}, {30, 0}}, color = {0, 0, 255}, smooth = Smooth.Bezier), Line(points = {{60, 0}, {90, 0}}, color = {0, 0, 255})}));
       end NLInductor;
       annotation (Documentation(info="<html>
-    <p>This package contains very basic electrical components such as resistor, capacitor, inductor, and the ground (which is needed in each electrical circuit description). Furthermore, sources and non linear components are in this package.</p>
+    <p>This package contains basic electrical components such as resistor, capacitor, inductor, and the ground (which is needed in each electrical circuit description). Furthermore, sources and non linear components are in this package.</p>
     </html>"));
     end Components;
 
@@ -1316,7 +1316,9 @@ package DSFLib
         p = fluidPort_b.p - fluidPort_a.p;
         q = fluidPort_b.q;
         q = -fluidPort_a.q;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>Superclass of elements which have <strong>two</strong> fluid ports. It is assumed that the flow rate flowing into fluidport_a is identical to the flow rate flowing out of fluidport_b. This flow rate is provided explicitly as flow rate q.</p>
+      </html>"),
           Icon);
       end TwoPort;
       annotation (Documentation(info="<html>
@@ -1413,6 +1415,9 @@ package DSFLib
       </html>"),
           Icon(graphics = {Text(origin = {-17, 107}, rotation = 180, extent = {{-181, 18}, {131, -21}}, textString = "Q=%Q"), Polygon(fillColor = {255, 255, 255}, pattern = LinePattern.None, fillPattern = FillPattern.HorizontalCylinder, points = {{-28, 30}, {-28, -30}, {50, -2}, {-28, 30}}), Polygon(lineColor = {0, 0, 255}, pattern = LinePattern.None, fillPattern = FillPattern.VerticalCylinder, points = {{-48, -60}, {-72, -100}, {72, -100}, {48, -60}, {-48, -60}}), Rectangle(fillColor = {0, 127, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-100, 32}, {100, -32}}), Ellipse(fillColor = {26, 182, 199}, fillPattern = FillPattern.Sphere, extent = {{-80, 80}, {80, -80}}), Polygon(origin = {5, -3}, fillColor = {0, 170, 255}, fillPattern = FillPattern.Solid, points = {{-33, 51}, {49, 1}, {-33, -43}, {-33, 49}, {-33, 51}}), Text(origin = {0, -200}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}, coordinateSystem(initialScale = 0.1, extent = {{-100, -100}, {100, 100}})));
       end IdealPump;
+      annotation(Documentation(info="<html>
+    <p>This package contains basic hydraulic components such as valves, tanks, and inertances. Additionally, it includes sources like constant pressure elements and ideal pumps. Every hydraulic system must include at least one constant pressure source or a tank.</p>
+    </html>"));
     end Components;
 
     package Examples "Examples that demonstrate the usage of the hydraulic components"
@@ -1457,8 +1462,8 @@ package DSFLib
   </html>")); 
   end Hydraulics;
 
-  package Thermal
-    package Units
+  package Thermal "Library of thermal components"
+    package Units "Thermal variables"
       type Temperature = Real(unit = "K", start = 293);
       type HeatFlow = Real(unit = "W");
     end Units;
@@ -1466,32 +1471,40 @@ package DSFLib
     package Interfaces
       import DSFLib.Thermal.Units.*;
 
-      connector HeatPort
-        Temperature T;
-        flow HeatFlow q;
-        annotation(
+      connector HeatPort "Heat port of an thermal component"
+        Temperature T "Temperature of the heat port";
+        flow HeatFlow q "Heat flow of the heat port";
+        annotation(Documentation(info="<html>
+      <p>Heatport is the basic thermal connector. It includes the absolute temperature. Furthermore, the heatport includes the heat flow, which is considered to be <strong>positive</strong> if it is flowing at the heatport <strong>into the device</strong>.</p>
+      </html>"),
           Icon(graphics = {Rectangle(fillColor = {255, 0, 0}, fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}})}));
       end HeatPort;
 
-      partial model TwoPort
+      partial model TwoPort "Component with two heatports a and b and current i from a to b"
         DSFLib.Thermal.Interfaces.HeatPort heatPort_b annotation(
           Placement(visible = true, transformation(origin = {-100, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, 6.66134e-16}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
         DSFLib.Thermal.Interfaces.HeatPort heatPort_a annotation(
           Placement(visible = true, transformation(origin = {100, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 8.88178e-16}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-        Temperature T_rel;
-        HeatFlow q;
+        Temperature T_rel "Temperature drop of the component";
+        HeatFlow q "Heat flow flowing from fluid port a to b";
       equation
         T_rel = heatPort_b.T - heatPort_a.T;
         q = heatPort_b.q;
         q = -heatPort_a.q;
+        annotation(Documentation(info="<html>
+      <p>Superclass of elements which have <strong>two</strong> thermal ports. It is assumed that the heat flow flowing into heatport_a is identical to the heat flow flowing out of heatport_b. This heat flow is provided explicitly as heat flow q.</p>
+      </html>"));
       end TwoPort;
+       annotation (Documentation(info="<html>
+    <p>This package contains connectors and interfaces (partial model) for thermal components. </p>
+    </html>"));
     end Interfaces;
 
-    package Components
+    package Components "Thermal components"
       import DSFLib.Thermal.Units.*;
       import DSFLib.Thermal.Interfaces.*;
 
-      model HeatCapacitor
+      model HeatCapacitor "Linear heat capacitor"
         DSFLib.Thermal.Interfaces.HeatPort heatPort annotation(
           Placement(visible = true, transformation(origin = {0, -62}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-1.77636e-15, -80}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
         parameter Real C(unit = "J/K") = 1 "Heat capacity";
@@ -1501,44 +1514,56 @@ package DSFLib
         C*der(T) = q;
         q = heatPort.q;
         T = heatPort.T;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>
+  This model represents an ideal thermal capacitor, a fundamental component in thermal systems used to store and release thermal energy. The thermal capacitor is characterized by its thermal capacity C (in J/K), which defines the amount of heat required to change its temperature by one kelvin.</p>
+      </html>"),
           Icon(graphics = {Rectangle(origin = {0, 10}, fillColor = {255, 0, 0}, fillPattern = FillPattern.VerticalCylinder, extent = {{-80, 70}, {80, -70}}), Text(origin = {114, -7}, rotation = -90, extent = {{-129, 14}, {129, -14}}, textString = "C=%C"), Text(origin = {-4, 30}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}, coordinateSystem(extent = {{-100, -100}, {100, 100}})));
       end HeatCapacitor;
 
-      model ThermalResistor
+      model ThermalResistor "Linear thermal resistor"
         extends TwoPort;
         parameter Real R(unit = "K/W") = 1 "Heat resistance";
       equation
         R*q = T_rel;
-        annotation(
+        annotation(Documentation(info="<html>
+          <p>This model represents an ideal thermal resistor, which describes the thermal resistance between two points. The thermal resistor limits heat flow based on the temperature difference.</p>
+          </html>"),
           Icon(graphics = {Rectangle(fillColor = {195, 163, 158}, fillPattern = FillPattern.Solid, extent = {{-86, 50}, {86, -50}}), Text(origin = {0, -18}, extent = {{-150, -45}, {150, -75}}, textString = "R=%R"), Line(points = {{-98, 0}, {-60, 0}, {-44, -30}, {-16, 30}, {14, -30}, {44, 30}, {60, 0}, {100, 0}}, color = {255, 0, 0}), Text(origin = {0, 14}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}));
       end ThermalResistor;
 
-      model HeatFlowSource
+      model HeatFlowSource "Ideal heat flow source"
         DSFLib.Thermal.Interfaces.HeatPort heatPort annotation(
           Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 1.9984e-15}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
         parameter HeatFlow Q = 1;
       equation
         heatPort.q = -Q;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model represents an ideal heat source, which supplies a constant heat flow regardless of the connected system's temperature or conditions. The heat source acts as an infinite energy supplier with no internal thermal resistance or capacity.</p>
+      </html>"),
           Icon(graphics = {Ellipse(origin = {0, -1}, lineColor = {255, 0, 0}, extent = {{-100, 99}, {100, -99}}), Line(points = {{-80, 0}, {80, 0}}, color = {255, 0, 0}), Polygon(origin = {60, -1}, lineColor = {255, 0, 0}, fillColor = {255, 0, 0}, fillPattern = FillPattern.Solid, points = {{-20, 21}, {20, 1}, {-20, -19}, {-20, 21}}), Text(origin = {1, 119}, extent = {{-123, 9}, {123, -9}}, textString = "q=%Q")}));
       end HeatFlowSource;
 
-      model ConstTemp
+      model ConstTemp "Ideal constant temperature"
         DSFLib.Thermal.Interfaces.HeatPort heatPort annotation(
           Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {97, -1}, extent = {{-19, -19}, {19, 19}}, rotation = 0)));
         parameter Temperature T = 273.15;
       equation
         heatPort.T = T;
-        annotation(
+        annotation(Documentation(info="<html>
+      <p>This model represents an ideal constant temperature source. It imposes a fixed temperature at its thermal port, regardless of the heat flow required to maintain that temperature. The component is assumed to have infinite thermal capacity and can absorb or supply any amount of heat to enforce the specified temperature.</p>
+      </html>"),
           Icon(graphics = {Rectangle(origin = {-18, -11}, fillColor = {255, 199, 197}, fillPattern = FillPattern.Forward, extent = {{-168, 97}, {98, -73}}), Text(origin = {-73, -111}, extent = {{-129, 13}, {159, -13}}, textString = "T=%T"), Text(origin = {-101, 1}, extent = {{-79, 23}, {183, -25}}, textString = "Tconst"), Text(origin = {-56, 50}, textColor = {0, 0, 255}, extent = {{-150, 90}, {150, 50}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)));
       end ConstTemp;
+      annotation(Documentation(info="<html>
+    <p>This package contains basic thermal components such as thermal resistor and heat capacitor. Furthermore, constant temperature and heat flow source are in this package. Every thermal system must have at least one constant temperature.</p>
+    </html>"));
     end Components;
 
-    package Examples
+    package Examples "Examples that demonstrate the usage of the thermal components"
       import DSFLib.Thermal.Components.*;
 
-      model TwoCompartments
+      model TwoCompartments "Two compartments"
         DSFLib.Thermal.Components.ThermalResistor thermalResistor annotation(
           Placement(visible = true, transformation(origin = {-24, 14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
         DSFLib.Thermal.Components.HeatFlowSource heatFlowSource annotation(
@@ -1562,7 +1587,10 @@ package DSFLib
           Line(points = {{32, 14}, {10, 14}, {10, 26}}));
         connect(constTemp.heatPort, thermalResistor1.heatPort_a) annotation(
           Line(points = {{66, 14}, {52, 14}}));
-        annotation(
+        annotation(Documentation(info="<html>
+            <p>This system models two connected compartments, each with a defined thermal capacity, linked by thermal resistors that simulate heat conduction. A constant heat flow is applied to the first compartment, while the second is connected to a constant temperature source, through a thermal resistor, representing the external environment.
+            </p>
+            </html>"),
           experiment(StartTime = 0, StopTime = 20, Tolerance = 1e-06, Interval = 0.04));
       end TwoCompartments;
     end Examples;
@@ -3567,9 +3595,9 @@ Table")}));
       uses(Modelica(version = "3.2.3")));
   end BondGraph;
 
-  package Utilities
-    package Functions
-      function LookUpTable
+  package Utilities "Library of utility functions"
+    package Functions "Functions"
+      function LookUpTable "Look up table"
         input Real x;
         input Real[:] xdata;
         input Real[:] ydata;
@@ -3582,9 +3610,15 @@ Table")}));
           k := k + 1;
         end while;
         y := (ydata[k + 1] - ydata[k])/(xdata[k + 1] - xdata[k])*(x - xdata[k]) + ydata[k];
+        annotation (
+  Documentation(info="<html>
+  <p>
+  This Modelica code defines a function that performs linear interpolation over a discrete set of data points. Given two input vectors xdata (independent variable) and ydata (dependent variable) along with a target value x, the function returns the corresponding interpolated output y.
+  </p>
+  </html>"));
       end LookUpTable;
 
-      function TF2SS
+      function TF2SS "Transfer function to state space"
         input Real num[:];
         input Real den[:];
         output Real A[size(den, 1) - 1, size(den, 1) - 1];
@@ -3615,6 +3649,12 @@ Table")}));
           B[1:n - 1, 1] := zeros(n - 1);
         end if;
       end TF2SS;
+      annotation (
+  Documentation(info="<html>
+  <p>
+  This Modelica code defines a function that computes the state-space representation of a system from its transfer function coefficients. The function takes as input the numerator and denominator coefficient vectors of the transfer function and returns the corresponding state-space matrices A, B, C, and D in controllable canonical form.
+  </p>
+  </html>"));
     end Functions;
   end Utilities;
   annotation(
