@@ -3899,8 +3899,7 @@ Table")}));
   This library contains Bond Graph components to build up models with this formalism.
   </p>
   
-  </html>"),
-      uses(Modelica(version = "3.2.3")));
+  </html>"));
   end BondGraph;
 
   package Utilities "Library of utility functions"
@@ -3965,6 +3964,4 @@ Table")}));
   </html>"));
     end Functions;
   end Utilities;
-  annotation(
-    uses(Modelica(version = "3.2.3")));
 end DSFLib;
