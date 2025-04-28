@@ -2908,22 +2908,10 @@ model DCMotorSepExc2 "Soft start of separately excitation DC motor"
         end ModulatedCurrentSource;
       end Circuits;
 
-      package Mechanical "Mechanical actuators"
-        model ModulatedForceSource "Modulated force source (1-dim.)"
-          extends DSFLib.Mechanical.Translational.Interfaces.Compliant;
-          DSFLib.ControlSystems.Blocks.Interfaces.RealInput u annotation(
-            Placement(visible = true, transformation(origin = {0, 98}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {0, 64}, extent = {{-14, 14}, {14, -14}}, rotation = -90)));
-        equation
-          flange_a.f = -u;
-          annotation(
-            Documentation(info = "<html>
-    <p>The modulated force source (ideal) is a converter of real valued signals into a translational force.</p>
-    </html>"),
-            Icon(graphics = {Text(origin = {0, -16}, textColor = {0, 0, 255}, extent = {{-150, -40}, {150, -80}}, textString = "%name"), Polygon(origin = {-6, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{90, 0}, {60, -30}, {60, -10}, {26, -10}, {26, 10}, {60, 10}, {60, 30}, {90, 0}}), Polygon(origin = {6, 0}, lineColor = {0, 127, 0}, fillColor = {160, 215, 160}, fillPattern = FillPattern.Solid, points = {{-90, 0}, {-60, 30}, {-60, 10}, {-26, 10}, {-26, -10}, {-60, -10}, {-60, -30}, {-90, 0}}), Ellipse(lineColor = {0, 127, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-50, 50}, {50, -50}})}));
-        end ModulatedForceSource;
+      package Mechanical "Mechanical actuators"model
 
-        model ModulatedForce "Modulated Force"
-          DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
+        ModulatedForce "Modulated Force"
+  DSFLib.Mechanical.Translational.Interfaces.Flange flange annotation(
             Placement(visible = true, transformation(origin = {-98, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -1.55431e-15}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
           ControlSystems.Blocks.Interfaces.RealInput u annotation(
             Placement(visible = true, transformation(origin = {0, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-2.22045e-16, 60}, extent = {{-16, -16}, {16, 16}}, rotation = -90)));
@@ -2934,8 +2922,8 @@ model DCMotorSepExc2 "Soft start of separately excitation DC motor"
             Documentation(info = "<html>
         <p>Model of a modulated force. The input signal in characterizes an external
         force which acts (with positive sign) at a flange. Positive force values accelerates in positive direction of movement, but brakes in reverse direction of movement.</p>
-        </html>"));
-        end ModulatedForce;
+        </html>"));end ModulatedForce
+  ;
       end Mechanical;
     end Actuators;
 
